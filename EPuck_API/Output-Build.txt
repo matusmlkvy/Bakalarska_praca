@@ -1,0 +1,14 @@
+﻿Build started...
+1>------ Build started: Project: EPuck_API, Configuration: Debug x64 ------
+1>OccupancyGrid.cpp
+1>PixTurret.cpp
+1>Robot.cpp
+1>Evaluator.cpp
+1>Interface.cpp
+1>SerialPort.cpp
+1>Udp2Serial.cpp
+1>UdpClient.cpp
+1>Generating Code...
+1>   Creating library D:\OneDrive - Žilinská univerzita v Žiline\Vyska\Bakalarka\Visual-projekty\EPuck_API\\Debug\x64\EPuck_API.lib and object D:\OneDrive - Žilinská univerzita v Žiline\Vyska\Bakalarka\Visual-projekty\EPuck_API\\Debug\x64\EPuck_API.exp
+1>EPuck_API.vcxproj -> D:\OneDrive - Žilinská univerzita v Žiline\Vyska\Bakalarka\Visual-projekty\EPuck_API\Debug\x64\EPuck_API.dll
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
