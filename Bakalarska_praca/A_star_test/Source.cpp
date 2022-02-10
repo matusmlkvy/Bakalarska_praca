@@ -179,9 +179,9 @@ void generatepath(EPuck::Robot& robo, int _pixels)
     generator.setHeuristic(AStar::Heuristic::euclidean);
     generator.setDiagonalMovement(false);
     
-    for (int ky = 0; ky < 172; ky++)
+    for (int ky = 0; ky < 79; ky++)
     {
-        for (int kx = 0; kx < 79; kx++)
+        for (int kx = 0; kx < 172; kx++)
         {
             Pair occupation(ky, kx);
             if (!isUnBlocked(trueGrid, occupation))
