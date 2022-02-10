@@ -9,6 +9,7 @@
 #include <vector>
 #include <functional>
 #include <set>
+#include <mutex>
 
 namespace AStar
 {
@@ -18,6 +19,8 @@ namespace AStar
 
         bool operator == (const Vec2i& coordinates_);
     };
+
+    
 
     using uint = unsigned int;
     using HeuristicFunction = std::function<uint(Vec2i, Vec2i)>;
@@ -49,12 +52,13 @@ namespace AStar
         void setHeuristic(HeuristicFunction heuristic_);
         CoordinateList findPath(Vec2i source_, Vec2i target_);
         void addCollision(Vec2i coordinates_);
+        void addCollisionHelp(Vec2i coordinates_);
         void removeCollision(Vec2i coordinates_);
         void clearCollisions();
 
     private:
         HeuristicFunction heuristic;
-        CoordinateList direction, walls;
+        CoordinateList direction, walls, wallshelp;
         Vec2i worldSize;
         uint directions;
     };

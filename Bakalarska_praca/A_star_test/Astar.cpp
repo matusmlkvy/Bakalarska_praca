@@ -3,6 +3,8 @@
 
 using namespace std::placeholders;
 
+std::mutex mtx;
+
 bool AStar::Vec2i::operator == (const Vec2i& coordinates_)
 {
     return (x == coordinates_.x && y == coordinates_.y);
@@ -49,6 +51,16 @@ void AStar::Generator::setHeuristic(HeuristicFunction heuristic_)
 {
     heuristic = std::bind(heuristic_, _1, _2);
 }
+
+
+/*void AStar::Generator::addCollisionHelp(Vec2i coordinates_)
+{
+    wallshelp.push_back(coordinates_);
+
+    mtx.lock();
+    addCollision(coordinates_);
+    mtx.unlock();
+}*/
 
 void AStar::Generator::addCollision(Vec2i coordinates_)
 {
