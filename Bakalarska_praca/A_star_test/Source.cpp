@@ -51,6 +51,9 @@ deque<path> pathq;
 start src;
 AStar::Generator generator;
 
+//mutex 
+//mutex mtx;
+
 // Creating a shortcut for int, int pair type
 typedef pair<int, int> Pair;
 
@@ -179,7 +182,7 @@ void generatepath(EPuck::Robot& robo, int _pixels)
     generator.setHeuristic(AStar::Heuristic::euclidean);
     generator.setDiagonalMovement(false);
     
-    for (int ky = 0; ky < 79; ky++)
+    /*for (int ky = 0; ky < 79; ky++)
     {
         for (int kx = 0; kx < 172; kx++)
         {
@@ -189,7 +192,7 @@ void generatepath(EPuck::Robot& robo, int _pixels)
                 generator.addCollision({ kx, ky });
             }            
         }
-    }
+    }*/
     while (robo.simulationEnabled())
     {
         Position_t pos = robo.position();
@@ -474,7 +477,8 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         if (wheels.Left != 0 && wheels.Right != 0)
         {
             vpoint.push_back(point);
-            //generator.addCollisionHelp({ (point.x / pixels / TICKS_PER_PIXEL), (point.y / pixels / TICKS_PER_PIXEL)});
+            generator.addCollisionHelp({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
+                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL)});
         }
     }
     if (prox.L_20deg > 0)
@@ -485,7 +489,8 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         if (wheels.Left != 0 && wheels.Right != 0)
         {
             vpoint.push_back(point);
-            //generator.addCollisionHelp({(point.x / pixels / TICKS_PER_PIXEL), (point.y / pixels / TICKS_PER_PIXEL)});
+            generator.addCollisionHelp({(int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
+                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL)});
         }
     }
     if (prox.L_50deg > 0)
@@ -496,7 +501,8 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         if (wheels.Left != 0 && wheels.Right != 0)
         {
             vpoint.push_back(point);
-            //generator.addCollisionHelp({ (point.x / pixels / TICKS_PER_PIXEL), (point.y / pixels / TICKS_PER_PIXEL) });
+            generator.addCollisionHelp({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
+                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         }
     }
     if (prox.L_90deg > 0)
@@ -507,7 +513,8 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         if (wheels.Left != 0 && wheels.Right != 0)
         {
             vpoint.push_back(point);
-            //generator.addCollisionHelp({ (point.x / pixels / TICKS_PER_PIXEL), (point.y / pixels / TICKS_PER_PIXEL) });
+            generator.addCollisionHelp({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
+                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         }
     }
     if (prox.R_150deg > 0)
@@ -518,7 +525,8 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         if (wheels.Left != 0 && wheels.Right != 0)
         {
             vpoint.push_back(point);
-            //generator.addCollisionHelp({ (point.x / pixels / TICKS_PER_PIXEL), (point.y / pixels / TICKS_PER_PIXEL) });
+            generator.addCollisionHelp({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
+                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         }
     }
     if (prox.R_20deg > 0)
@@ -529,7 +537,8 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         if (wheels.Left != 0 && wheels.Right != 0)
         {
             vpoint.push_back(point);
-            //generator.addCollisionHelp({ (point.x / pixels / TICKS_PER_PIXEL), (point.y / pixels / TICKS_PER_PIXEL) });
+            generator.addCollisionHelp({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
+                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         }
     }
     if (prox.R_50deg > 0)
@@ -540,7 +549,8 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         if (wheels.Left != 0 && wheels.Right != 0)
         {
             vpoint.push_back(point);
-            //generator.addCollisionHelp({ (point.x / pixels / TICKS_PER_PIXEL), (point.y / pixels / TICKS_PER_PIXEL) });
+            generator.addCollisionHelp({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
+                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         }        
     }
     if (prox.R_90deg > 0)
@@ -551,7 +561,8 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         if (wheels.Left != 0 && wheels.Right != 0)
         {
             vpoint.push_back(point);
-            //generator.addCollisionHelp({ (point.x / pixels / TICKS_PER_PIXEL), (point.y / pixels / TICKS_PER_PIXEL) });
+            generator.addCollisionHelp({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
+                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         }
     }
     
