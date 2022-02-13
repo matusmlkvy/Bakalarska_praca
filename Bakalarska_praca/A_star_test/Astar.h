@@ -59,7 +59,7 @@ namespace AStar
 
     private:
         HeuristicFunction heuristic;
-        CoordinateList direction, walls, wallshelp;
+        CoordinateList direction, walls;
         Vec2i worldSize;
         uint directions;
     };

@@ -52,13 +52,6 @@ void AStar::Generator::setHeuristic(HeuristicFunction heuristic_)
 }
 
 
-void AStar::Generator::addCollisionHelp(Vec2i coordinates_)
-{
-    wallshelp.push_back(coordinates_);
-    //zistit ako spravit mutex aby sa nemenil parameter walls ked sa rata A* algoritmus a nasledne nech sa walls doplni
-    addCollision(coordinates_);
-}
-
 void AStar::Generator::addCollision(Vec2i coordinates_)
 {
     std::lock_guard<std::mutex> locker(lock_walls);
