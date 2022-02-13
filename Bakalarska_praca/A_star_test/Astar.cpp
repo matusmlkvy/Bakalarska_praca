@@ -3,7 +3,6 @@
 
 using namespace std::placeholders;
 
-std::mutex mtx;
 
 bool AStar::Vec2i::operator == (const Vec2i& coordinates_)
 {
@@ -57,12 +56,12 @@ void AStar::Generator::addCollisionHelp(Vec2i coordinates_)
 {
     wallshelp.push_back(coordinates_);
     //zistit ako spravit mutex aby sa nemenil parameter walls ked sa rata A* algoritmus a nasledne nech sa walls doplni
-    std::lock_guard<std::mutex> lg(mtx);
     addCollision(coordinates_);
 }
 
 void AStar::Generator::addCollision(Vec2i coordinates_)
 {
+    std::lock_guard<std::mutex> locker(lock_walls);
     walls.push_back(coordinates_);
 }
 
@@ -174,6 +173,7 @@ void AStar::Generator::releaseNodes(NodeSet& nodes_)
 
 bool AStar::Generator::detectCollision(Vec2i coordinates_)
 {
+    std::lock_guard<std::mutex> locker(lock_walls);
     if (coordinates_.x < 0 || coordinates_.x >= worldSize.x ||
         coordinates_.y < 0 || coordinates_.y >= worldSize.y ||
         std::find(walls.begin(), walls.end(), coordinates_) != walls.end())

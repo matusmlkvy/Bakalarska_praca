@@ -43,6 +43,7 @@ namespace AStar
         //bool detectCollision(Vec2i coordinates_);
         Node* findNodeOnList(NodeSet& nodes_, Vec2i coordinates_);
         void releaseNodes(NodeSet& nodes_);
+        std::mutex lock_walls;
 
     public:
         Generator();
@@ -73,6 +74,7 @@ namespace AStar
         static uint octagonal(Vec2i source_, Vec2i target_);
     };
 }
+
 
 #endif // __ASTAR_HPP_8F637DB91972F6C878D41D63F7E7214F__
 

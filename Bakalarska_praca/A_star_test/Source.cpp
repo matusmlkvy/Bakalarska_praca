@@ -39,7 +39,7 @@ struct start
 };
 struct destination
 {
-    int x = 9760;
+    int x = 2400;
     int y = 1040;
 };
 struct path
@@ -477,7 +477,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         if (wheels.Left != 0 && wheels.Right != 0)
         {
             vpoint.push_back(point);
-            generator.addCollisionHelp({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
+            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
                 (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL)});
         }
     }
@@ -489,7 +489,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         if (wheels.Left != 0 && wheels.Right != 0)
         {
             vpoint.push_back(point);
-            generator.addCollisionHelp({(int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
+            generator.addCollision({(int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
                 (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL)});
         }
     }
@@ -501,7 +501,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         if (wheels.Left != 0 && wheels.Right != 0)
         {
             vpoint.push_back(point);
-            generator.addCollisionHelp({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
+            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
                 (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         }
     }
@@ -513,7 +513,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         if (wheels.Left != 0 && wheels.Right != 0)
         {
             vpoint.push_back(point);
-            generator.addCollisionHelp({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
+            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
                 (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         }
     }
@@ -525,7 +525,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         if (wheels.Left != 0 && wheels.Right != 0)
         {
             vpoint.push_back(point);
-            generator.addCollisionHelp({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
+            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
                 (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         }
     }
@@ -537,7 +537,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         if (wheels.Left != 0 && wheels.Right != 0)
         {
             vpoint.push_back(point);
-            generator.addCollisionHelp({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
+            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
                 (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         }
     }
@@ -549,7 +549,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         if (wheels.Left != 0 && wheels.Right != 0)
         {
             vpoint.push_back(point);
-            generator.addCollisionHelp({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
+            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
                 (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         }        
     }
@@ -561,7 +561,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         if (wheels.Left != 0 && wheels.Right != 0)
         {
             vpoint.push_back(point);
-            generator.addCollisionHelp({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
+            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
                 (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         }
     }
