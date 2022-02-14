@@ -40,7 +40,7 @@ struct start
 struct destination
 {
     int x = 2400;
-    int y = 1040;
+    int y = 800;
 };
 struct path
 {
@@ -51,8 +51,7 @@ deque<path> pathq;
 start src;
 AStar::Generator generator;
 
-//mutex 
-//mutex mtx;
+mutex mtx;
 
 // Creating a shortcut for int, int pair type
 typedef pair<int, int> Pair;
@@ -204,17 +203,20 @@ void generatepath(EPuck::Robot& robo, int _pixels)
             (int)std::round((double)dest.y * 1.0 / TICKS_PER_PIXEL / pixels)});
         
         path p1;
-        help.clear();
-        pathq.clear();
-        for (auto& coordinate : pth)
         {
-            p1.x = coordinate.x * TICKS_PER_PIXEL * pixels;
-            p1.y = coordinate.y * TICKS_PER_PIXEL * pixels;
-            help.push_back(p1);
-            pathq.push_front(p1);
-            //std::cout << p1.x << " " << p1.y << "\n";
+            lock_guard<mutex> lock(mtx);
+            help.clear();
+            pathq.clear();
+            for (auto& coordinate : pth)
+            {
+                p1.x = coordinate.x * TICKS_PER_PIXEL * pixels;
+                p1.y = coordinate.y * TICKS_PER_PIXEL * pixels;
+                help.push_back(p1);
+                pathq.push_front(p1);
+                //std::cout << p1.x << " " << p1.y << "\n";
+            }
+            pathq.pop_front();
         }
-        pathq.pop_front();
     }
 
     
@@ -291,7 +293,14 @@ void route(EPuck::Robot& robo)
 {
     Position_t pos = robo.position();
     Wheels_t wheels = robo.wheels();
-    path p2 = pathq.front();
+    path p2;
+    {
+        lock_guard<mutex> lock(mtx);
+        if (pathq.size() > 0)
+            p2 = pathq.front();
+        else
+            return;
+    }
    
     if (src.x < p2.x)
     {
@@ -471,7 +480,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     Mat imagegen = Mat::zeros(ROW * pixels, COL * pixels, CV_8UC3);
     if (prox.L_150deg > 0)
     {
-        float d = 15000.0 / (float)prox.L_150deg + 0.035 * TICKS_PER_METER;
+        float d = 15000.0 / (float)prox.L_150deg + 0.03 * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree - (150.0 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree - (150.0 / 180.0) * M_PI));
         if (wheels.Left != 0 && wheels.Right != 0)
@@ -483,7 +492,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     }
     if (prox.L_20deg > 0)
     {
-        float d = 15000.0 / (float)prox.L_20deg + 0.035 * TICKS_PER_METER;
+        float d = 15000.0 / (float)prox.L_20deg + 0.03 * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree - (20.0 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree - (20.0 / 180.0) * M_PI));
         if (wheels.Left != 0 && wheels.Right != 0)
@@ -495,7 +504,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     }
     if (prox.L_50deg > 0)
     {
-        float d = 15000.0 / (float)prox.L_50deg + 0.035 * TICKS_PER_METER;
+        float d = 15000.0 / (float)prox.L_50deg + 0.03 * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree - (50.0 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree - (50.0 / 180.0) * M_PI));
         if (wheels.Left != 0 && wheels.Right != 0)
@@ -507,7 +516,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     }
     if (prox.L_90deg > 0)
     {
-        float d = 15000.0 / (float)prox.L_90deg + 0.035 * TICKS_PER_METER;
+        float d = 15000.0 / (float)prox.L_90deg + 0.03 * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree - (90.0 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree - (90.0 / 180.0) * M_PI));
         if (wheels.Left != 0 && wheels.Right != 0)
@@ -519,7 +528,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     }
     if (prox.R_150deg > 0)
     {
-        float d = 15000.0 / (float)prox.R_150deg + 0.035 * TICKS_PER_METER;
+        float d = 15000.0 / (float)prox.R_150deg + 0.03 * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree + (150.0 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree + (150.0 / 180.0) * M_PI));
         if (wheels.Left != 0 && wheels.Right != 0)
@@ -531,7 +540,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     }
     if (prox.R_20deg > 0)
     {
-        float d = 15000.0 / (float)prox.R_20deg + 0.035 * TICKS_PER_METER;
+        float d = 15000.0 / (float)prox.R_20deg + 0.03 * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree + (20.0 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree + (20.0 / 180.0) * M_PI));
         if (wheels.Left != 0 && wheels.Right != 0)
@@ -543,7 +552,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     }
     if (prox.R_50deg > 0)
     {
-        float d = 15000.0 / (float)prox.R_50deg + 0.035 * TICKS_PER_METER;
+        float d = 15000.0 / (float)prox.R_50deg + 0.03 * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree + (50.0 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree + (50.0 / 180.0) * M_PI));
         if (wheels.Left != 0 && wheels.Right != 0)
@@ -555,7 +564,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     }
     if (prox.R_90deg > 0)
     {
-        float d = 15000.0 / (float)prox.R_90deg + 0.035 * TICKS_PER_METER;
+        float d = 15000.0 / (float)prox.R_90deg + 0.03 * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree + (90.0 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree + (90.0 / 180.0) * M_PI));
         if (wheels.Left != 0 && wheels.Right != 0)
