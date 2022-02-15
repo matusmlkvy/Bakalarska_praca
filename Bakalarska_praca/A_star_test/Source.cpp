@@ -35,11 +35,11 @@ struct obstacle
 struct start
 {
     int x = 560;
-    int y = 5680;
+    int y = 3200;
 };
 struct destination
 {
-    int x = 2400;
+    int x = 8000;
     int y = 800;
 };
 struct path
@@ -179,7 +179,7 @@ void generatepath(EPuck::Robot& robo, int _pixels)
     generator.setWorldSize({ 172, 79 });
     // You can use a few heuristics : manhattan, euclidean or octagonal.
     generator.setHeuristic(AStar::Heuristic::euclidean);
-    generator.setDiagonalMovement(true);
+    generator.setDiagonalMovement(false);
     
     /*for (int ky = 0; ky < 79; ky++)
     {
@@ -470,11 +470,12 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     Position_t pos = robo.position();
     //robots radius
     int R = (int)(0.035 * TICKS_PER_METER / TICKS_PER_PIXEL);
-    float radius = 0.025; //robot radius for obstacle  
+
+    float radius = 0.01; //robot radius for obstacle  
     //proximity from sensors
     Proximity_t prox = robo.proximity();
     Wheels_t wheels = robo.wheels();
-    float degree = (float)pos.psi * 0.01 * M_PI / 180.0;
+    float degree = (float)pos.psi * 0.012 * M_PI / 180.0;
 
     obstacle point;
   
@@ -493,7 +494,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     }
     if (prox.L_20deg > 0)
     {
-        float d = 15000.0 / (float)prox.L_20deg + radius * TICKS_PER_METER;
+        float d = 15000.0 / (float)prox.L_20deg + 0.032 * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree - (20.0 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree - (20.0 / 180.0) * M_PI));
         if (wheels.Left != 0 && wheels.Right != 0)
@@ -541,7 +542,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     }
     if (prox.R_20deg > 0)
     {
-        float d = 15000.0 / (float)prox.R_20deg + radius * TICKS_PER_METER;
+        float d = 15000.0 / (float)prox.R_20deg + 0.032 * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree + (20.0 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree + (20.0 / 180.0) * M_PI));
         if (wheels.Left != 0 && wheels.Right != 0)
@@ -714,7 +715,7 @@ int main()
     Position_t setpos;
     setpos.psi = 4500;
     setpos.x = 560;
-    setpos.y = 5680;
+    setpos.y = 3200;
     robo.setPosition(setpos);
 
     thread astar(generatepath, ref(robo), 8);
