@@ -39,8 +39,8 @@ struct start
 };
 struct destination
 {
-    int x = 8000;
-    int y = 800;
+    int x = 4000;
+    int y = 3200;
 };
 struct path
 {
@@ -50,6 +50,7 @@ struct path
 deque<path> pathq;
 start src;
 AStar::Generator generator;
+destination dest;
 
 mutex mtx;
 
@@ -172,7 +173,7 @@ void generatepath(EPuck::Robot& robo, int _pixels)
           { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } },
         }
     };
-    destination dest;
+    //destination dest;
 
     
     // Set 2d map size.
@@ -194,32 +195,51 @@ void generatepath(EPuck::Robot& robo, int _pixels)
     }*/
     while (robo.simulationEnabled())
     {
+        Wheels_t wheels = robo.wheels();
         Position_t pos = robo.position();
-        std::cout << "Generate path ... \n";
-        // This method returns vector of coordinates from target to source.
-        auto pth = generator.findPath({ (int)std::round((double)pos.x * 1.0 / TICKS_PER_PIXEL / pixels),
-            (int)std::round((double)pos.y * 1.0 / TICKS_PER_PIXEL / pixels)},
-            { (int)std::round((double)dest.x * 1.0 / TICKS_PER_PIXEL / pixels),
-            (int)std::round((double)dest.y * 1.0 / TICKS_PER_PIXEL / pixels)});
-        
-        path p1;
+        if ((((int)std::round((double)pos.x * 1.0 / TICKS_PER_PIXEL / pixels))!=((int)std::round((double)dest.x * 1.0 / TICKS_PER_PIXEL / pixels))) || 
+            (((int)std::round((double)pos.y * 1.0 / TICKS_PER_PIXEL / pixels))!=((int)std::round((double)dest.y * 1.0 / TICKS_PER_PIXEL / pixels))))
+        {
+            std::cout << "Generate path ... \n";
+            // This method returns vector of coordinates from target to source.
+            auto pth = generator.findPath({ (int)std::round((double)pos.x * 1.0 / TICKS_PER_PIXEL / pixels),
+                (int)std::round((double)pos.y * 1.0 / TICKS_PER_PIXEL / pixels) },
+                { (int)std::round((double)dest.x * 1.0 / TICKS_PER_PIXEL / pixels),
+                (int)std::round((double)dest.y * 1.0 / TICKS_PER_PIXEL / pixels) });
+
+            path p1;
+            {
+                lock_guard<mutex> lock(mtx);
+                help.clear();
+                pathq.clear();
+                for (auto& coordinate : pth)
+                {
+                    p1.x = coordinate.x * TICKS_PER_PIXEL * pixels;
+                    p1.y = coordinate.y * TICKS_PER_PIXEL * pixels;
+                    help.push_back(p1);
+                    pathq.push_front(p1);
+                    //std::cout << p1.x << " " << p1.y << "\n";
+                }
+                pathq.pop_front();
+            }
+        }
+        else
         {
             lock_guard<mutex> lock(mtx);
-            help.clear();
-            pathq.clear();
-            for (auto& coordinate : pth)
             {
-                p1.x = coordinate.x * TICKS_PER_PIXEL * pixels;
-                p1.y = coordinate.y * TICKS_PER_PIXEL * pixels;
-                help.push_back(p1);
-                pathq.push_front(p1);
-                //std::cout << p1.x << " " << p1.y << "\n";
+                wheels.Left = 0;
+                wheels.Right = 0;
+                robo.setWheels(wheels);
+                int x, y;
+                cout << "Zadajte cielove suradnice pre x:" << endl;
+                cin >> dest.x;
+                cout << "Zadajte cielove suradnice pre y:" << endl;
+                cin >> dest.y;
+                //dest.x = x;
+                //dest.x = y;
             }
-            pathq.pop_front();
         }
     }
-
-    
 }
 
 void turning(EPuck::Robot& robo, float _diff)
@@ -317,6 +337,7 @@ void route(EPuck::Robot& robo)
         }
         else if (pos.x >= p2.x - 30)
         {
+            lock_guard<mutex> lock(mtx);
             wheels.Left = 0;
             wheels.Right = 0;
             robo.setWheels(wheels);
@@ -340,6 +361,7 @@ void route(EPuck::Robot& robo)
         }
         else if (pos.x <= p2.x + 30)
         {
+            lock_guard<mutex> lock(mtx);
             wheels.Left = 0;
             wheels.Right = 0;
             robo.setWheels(wheels);
@@ -363,6 +385,7 @@ void route(EPuck::Robot& robo)
         }
         else if (pos.y > (p2.y - 30))
         {
+            lock_guard<mutex> lock(mtx);
             wheels.Left = 0;
             wheels.Right = 0;
             robo.setWheels(wheels);
@@ -386,6 +409,7 @@ void route(EPuck::Robot& robo)
         }
         else if (pos.y <= (p2.y + 30))
         {
+            lock_guard<mutex> lock(mtx);
             wheels.Left = 0;
             wheels.Right = 0;
             robo.setWheels(wheels);
@@ -437,14 +461,17 @@ void drawmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot&
 
 
     //draw coordinates on map (path)
-    for (int i = 0; i < help.size(); i++)
+    lock_guard<mutex> lock(mtx);
     {
-        int x = (int)help[i].x / TICKS_PER_PIXEL;
-        int y = (int)help[i].y / TICKS_PER_PIXEL;
-        rectangle(map, Point(x, y + 2), Point(x + 2, y), Scalar(0, 255, 0), FILLED);
+        for (int i = 0; i < help.size(); i++)
+        {
+            int x = (int)help[i].x / TICKS_PER_PIXEL;
+            int y = (int)help[i].y / TICKS_PER_PIXEL;
+            rectangle(map, Point(x, y + 2), Point(x + 2, y), Scalar(0, 255, 0), FILLED);
+        }
     }
     //draw destination point
-    destination dest;
+    //destination dest;
     circle(map, Point(dest.x / TICKS_PER_PIXEL, dest.y / TICKS_PER_PIXEL), 10, Scalar(255, 0, 255), FILLED);
 
 
@@ -730,7 +757,7 @@ int main()
     thread drawingmap(runSimulation, ref(robo), pixels);
     
     
-    while (robo.simulationEnabled())
+    /*while (robo.simulationEnabled())
     {
         cout << "\n" << "Set left wheel" << endl;
         cin >> set.Left;
@@ -742,7 +769,7 @@ int main()
         {
             robo.disableSimulation();
         }
-    }
+    }*/
     astar.join();
     drawingmap.join();   
     
