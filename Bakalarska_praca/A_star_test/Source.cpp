@@ -321,7 +321,12 @@ void route(EPuck::Robot& robo)
         else
             return;
     }
-   
+    if (src.x == p2.x)
+    {
+        src.x = p2.x;
+        pathq.pop_front();
+        p2 = pathq.front();
+    }
     if (src.x < p2.x)
     {
         int psi_ref = 0;
@@ -348,15 +353,15 @@ void route(EPuck::Robot& robo)
     }
     if (src.x > p2.x)
     {
-        int psi_ref = 18000;
+        int psi_ref = 0;
         int psi_err = pos.psi - psi_ref;
         float wheels_diff = 0.01 * psi_err;
         turning(robo, wheels_diff);
        
-        if ((pos.x > p2.x + 31) && (pos.psi == 18000))
+        if ((pos.x > p2.x + 31) && (pos.psi == 0))
         {
-            wheels.Left = 100;
-            wheels.Right = 100;
+            wheels.Left = -100;
+            wheels.Right = -100;
             robo.setWheels(wheels);
         }
         else if (pos.x <= p2.x + 30)
