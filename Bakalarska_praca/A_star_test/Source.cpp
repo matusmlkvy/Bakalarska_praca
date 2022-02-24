@@ -39,8 +39,8 @@ struct start
 };
 struct destination
 {
-    int x = 4000;
-    int y = 3200;
+    int x = 3200;
+    int y = 560;
 };
 struct path
 {
@@ -230,7 +230,7 @@ void generatepath(EPuck::Robot& robo, int _pixels)
                 wheels.Left = 0;
                 wheels.Right = 0;
                 robo.setWheels(wheels);
-                int x, y;
+                //int x, y;
                 cout << "Zadajte cielove suradnice pre x:" << endl;
                 cin >> dest.x;
                 cout << "Zadajte cielove suradnice pre y:" << endl;
@@ -321,12 +321,12 @@ void route(EPuck::Robot& robo)
         else
             return;
     }
-    if (src.x == p2.x)
+    /*if (src.x == p2.x)
     {
         src.x = p2.x;
         pathq.pop_front();
         p2 = pathq.front();
-    }
+    }*/
     if (src.x < p2.x)
     {
         int psi_ref = 0;
@@ -503,7 +503,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     //robots radius
     int R = (int)(0.035 * TICKS_PER_METER / TICKS_PER_PIXEL);
 
-    float radius = 0.01; //robot radius for obstacle  
+    float radius = 0.009; //robot radius for obstacle  
     //proximity from sensors
     Proximity_t prox = robo.proximity();
     Wheels_t wheels = robo.wheels();
@@ -514,98 +514,122 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     Mat imagegen = Mat::zeros(ROW * pixels, COL * pixels, CV_8UC3);
     if (prox.L_150deg > 0)
     {
-        float d = 15000.0 / (float)prox.L_150deg + radius * TICKS_PER_METER;
-        point.x = (pos.x + d * cos(degree - (150.0 / 180.0) * M_PI));
-        point.y = (pos.y + d * sin(degree - (150.0 / 180.0) * M_PI));
-        if (wheels.Left != 0 && wheels.Right != 0)
+        for (int i = 140; i <= 170; i=i+10)
         {
-            vpoint.push_back(point);
-            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
-                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL)});
+            float d = 15000.0 / (float)prox.L_150deg + radius * TICKS_PER_METER;
+            point.x = (pos.x + d * cos(degree - (i / 180.0) * M_PI));
+            point.y = (pos.y + d * sin(degree - (i / 180.0) * M_PI));
+            if (wheels.Left != 0 && wheels.Right != 0)
+            {
+                vpoint.push_back(point);
+                generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            }
         }
     }
     if (prox.L_20deg > 0)
     {
-        float d = 15000.0 / (float)prox.L_20deg + 0.032 * TICKS_PER_METER;
-        point.x = (pos.x + d * cos(degree - (20.0 / 180.0) * M_PI));
-        point.y = (pos.y + d * sin(degree - (20.0 / 180.0) * M_PI));
-        if (wheels.Left != 0 && wheels.Right != 0)
+        for (int i = 0; i <= 30; i=i+10)
         {
-            vpoint.push_back(point);
-            generator.addCollision({(int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
-                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL)});
+            float d = 15000.0 / (float)prox.L_20deg + radius * TICKS_PER_METER;
+            point.x = (pos.x + d * cos(degree - (i / 180.0) * M_PI));
+            point.y = (pos.y + d * sin(degree - (i / 180.0) * M_PI));
+            if (wheels.Left != 0 && wheels.Right != 0)
+            {
+                vpoint.push_back(point);
+                generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            }
         }
     }
     if (prox.L_50deg > 0)
     {
-        float d = 15000.0 / (float)prox.L_50deg + radius * TICKS_PER_METER;
-        point.x = (pos.x + d * cos(degree - (50.0 / 180.0) * M_PI));
-        point.y = (pos.y + d * sin(degree - (50.0 / 180.0) * M_PI));
-        if (wheels.Left != 0 && wheels.Right != 0)
+        for (int i = 45; i <= 55; i = i + 5)
         {
-            vpoint.push_back(point);
-            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
-                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            float d = 15000.0 / (float)prox.L_50deg + radius * TICKS_PER_METER;
+            point.x = (pos.x + d * cos(degree - (i / 180.0) * M_PI));
+            point.y = (pos.y + d * sin(degree - (i / 180.0) * M_PI));
+            if (wheels.Left != 0 && wheels.Right != 0)
+            {
+                vpoint.push_back(point);
+                generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            }
         }
     }
     if (prox.L_90deg > 0)
     {
-        float d = 15000.0 / (float)prox.L_90deg + radius * TICKS_PER_METER;
-        point.x = (pos.x + d * cos(degree - (90.0 / 180.0) * M_PI));
-        point.y = (pos.y + d * sin(degree - (90.0 / 180.0) * M_PI));
-        if (wheels.Left != 0 && wheels.Right != 0)
+        for (int i = 85; i <= 95; i=i+5)
         {
-            vpoint.push_back(point);
-            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
-                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            float d = 15000.0 / (float)prox.L_90deg + radius * TICKS_PER_METER;
+            point.x = (pos.x + d * cos(degree - (i / 180.0) * M_PI));
+            point.y = (pos.y + d * sin(degree - (i / 180.0) * M_PI));
+            if (wheels.Left != 0 && wheels.Right != 0)
+            {
+                vpoint.push_back(point);
+                generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            }
         }
     }
     if (prox.R_150deg > 0)
     {
-        float d = 15000.0 / (float)prox.R_150deg + radius * TICKS_PER_METER;
-        point.x = (pos.x + d * cos(degree + (150.0 / 180.0) * M_PI));
-        point.y = (pos.y + d * sin(degree + (150.0 / 180.0) * M_PI));
-        if (wheels.Left != 0 && wheels.Right != 0)
+        for (int i = 140; i <= 170; i=i+10)
         {
-            vpoint.push_back(point);
-            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
-                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            float d = 15000.0 / (float)prox.R_150deg + radius * TICKS_PER_METER;
+            point.x = (pos.x + d * cos(degree + (i / 180.0) * M_PI));
+            point.y = (pos.y + d * sin(degree + (i / 180.0) * M_PI));
+            if (wheels.Left != 0 && wheels.Right != 0)
+            {
+                vpoint.push_back(point);
+                generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            }
         }
     }
     if (prox.R_20deg > 0)
     {
-        float d = 15000.0 / (float)prox.R_20deg + 0.032 * TICKS_PER_METER;
-        point.x = (pos.x + d * cos(degree + (20.0 / 180.0) * M_PI));
-        point.y = (pos.y + d * sin(degree + (20.0 / 180.0) * M_PI));
-        if (wheels.Left != 0 && wheels.Right != 0)
+        for (int i = 0; i <= 30; i=i+10)
         {
-            vpoint.push_back(point);
-            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
-                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            float d = 15000.0 / (float)prox.R_20deg + radius * TICKS_PER_METER;
+            point.x = (pos.x + d * cos(degree + (i / 180.0) * M_PI));
+            point.y = (pos.y + d * sin(degree + (i / 180.0) * M_PI));
+            if (wheels.Left != 0 && wheels.Right != 0)
+            {
+                vpoint.push_back(point);
+                generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            }
         }
     }
     if (prox.R_50deg > 0)
     {
-        float d = 15000.0 / (float)prox.R_50deg + radius * TICKS_PER_METER;
-        point.x = (pos.x + d * cos(degree + (50.0 / 180.0) * M_PI));
-        point.y = (pos.y + d * sin(degree + (50.0 / 180.0) * M_PI));
-        if (wheels.Left != 0 && wheels.Right != 0)
+        for (int i = 45; i <= 55; i = i + 5)
         {
-            vpoint.push_back(point);
-            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
-                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
-        }        
+            float d = 15000.0 / (float)prox.R_50deg + radius * TICKS_PER_METER;
+            point.x = (pos.x + d * cos(degree + (i / 180.0) * M_PI));
+            point.y = (pos.y + d * sin(degree + (i / 180.0) * M_PI));
+            if (wheels.Left != 0 && wheels.Right != 0)
+            {
+                vpoint.push_back(point);
+                generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            }
+        }      
     }
     if (prox.R_90deg > 0)
     {
-        float d = 15000.0 / (float)prox.R_90deg + radius * TICKS_PER_METER;
-        point.x = (pos.x + d * cos(degree + (90.0 / 180.0) * M_PI));
-        point.y = (pos.y + d * sin(degree + (90.0 / 180.0) * M_PI));
-        if (wheels.Left != 0 && wheels.Right != 0)
+        for (int i = 85; i <= 95; i=i+5)
         {
-            vpoint.push_back(point);
-            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL), 
-                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            float d = 15000.0 / (float)prox.R_90deg + radius * TICKS_PER_METER;
+            point.x = (pos.x + d * cos(degree + (i / 180.0) * M_PI));
+            point.y = (pos.y + d * sin(degree + (i / 180.0) * M_PI));
+            if (wheels.Left != 0 && wheels.Right != 0)
+            {
+                vpoint.push_back(point);
+                generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            }
         }
     }
     
