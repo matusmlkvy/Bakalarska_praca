@@ -40,7 +40,7 @@ struct start
 struct destination
 {
     int x = 3200;
-    int y = 560;
+    int y = 3200;
 };
 struct path
 {
@@ -252,7 +252,7 @@ void turning(EPuck::Robot& robo, float _diff)
         wheels.Right = 100;
         robo.setWheels(wheels);
     }
-    else if (((wheels_diff <= 45) && (wheels_diff > 10)))
+    else if ((wheels_diff <= 45) && (wheels_diff > 10))
     {
         wheels.Left = -50;
         wheels.Right = 50;
@@ -309,6 +309,53 @@ void turning(EPuck::Robot& robo, float _diff)
     }
 }
 
+void going(EPuck::Robot& robo, float _differ)
+{
+    float going_dif = _differ;
+    Wheels_t wheels = robo.wheels();
+
+    //going forward
+    if (going_dif > 50)
+    {
+        wheels.Left = 150;
+        wheels.Right = 150;
+        robo.setWheels(wheels);
+    }
+    else if ((going_dif <= 50) && (going_dif > 10))
+    {
+        wheels.Left = 50;
+        wheels.Right = 50;
+        robo.setWheels(wheels);
+    }
+    else if ((going_dif <= 10) && (going_dif > 0))
+    {
+        wheels.Left = 20;
+        wheels.Right = 20;
+        robo.setWheels(wheels);
+    }
+
+    //going back
+    if (going_dif < -50)
+    {
+        wheels.Left = -150;
+        wheels.Right = -150;
+        robo.setWheels(wheels);
+    }
+    else if ((going_dif >= -50) && (going_dif < -10))
+    {
+        wheels.Left = -50;
+        wheels.Right = -50;
+        robo.setWheels(wheels);
+    }
+    else if ((going_dif >= -10) && (going_dif < 0))
+    {
+        wheels.Left = -20;
+        wheels.Right = -20;
+        robo.setWheels(wheels);
+    }
+
+}
+
 void route(EPuck::Robot& robo)
 {
     Position_t pos = robo.position();
@@ -334,13 +381,16 @@ void route(EPuck::Robot& robo)
         float wheels_diff = 0.01 * psi_err;
         turning(robo, wheels_diff);
 
-        if ((pos.x < (p2.x - 31)) && (pos.psi == 0))
+        float go = p2.x - pos.x;
+
+        if ((pos.x < (p2.x - 11)) && (pos.psi == 0))
         {
-            wheels.Left = 100;
+            going(robo, go);
+            /*wheels.Left = 100;
             wheels.Right = 100;
-            robo.setWheels(wheels);
+            robo.setWheels(wheels);*/
         }
-        else if (pos.x >= p2.x - 30)
+        else if (pos.x >= p2.x - 10)
         {
             lock_guard<mutex> lock(mtx);
             wheels.Left = 0;
@@ -357,14 +407,17 @@ void route(EPuck::Robot& robo)
         int psi_err = pos.psi - psi_ref;
         float wheels_diff = 0.01 * psi_err;
         turning(robo, wheels_diff);
+
+        float go = p2.x - pos.x;
        
-        if ((pos.x > p2.x + 31) && (pos.psi == 0))
+        if ((pos.x > p2.x + 11) && (pos.psi == 0))
         {
-            wheels.Left = -100;
+            going(robo, go);
+            /*wheels.Left = -100;
             wheels.Right = -100;
-            robo.setWheels(wheels);
+            robo.setWheels(wheels);*/
         }
-        else if (pos.x <= p2.x + 30)
+        else if (pos.x <= p2.x + 10)
         {
             lock_guard<mutex> lock(mtx);
             wheels.Left = 0;
@@ -381,14 +434,17 @@ void route(EPuck::Robot& robo)
         int psi_err = pos.psi - psi_ref;
         float wheels_diff = 0.01 * psi_err;
         turning(robo, wheels_diff);
+
+        float go = p2.y - pos.y;
         
-        if ((pos.y < (p2.y - 31)) && (pos.psi == 9000))
+        if ((pos.y < (p2.y - 11)) && (pos.psi == 9000))
         {
-            wheels.Left = 100;
+            going(robo, go);
+            /*wheels.Left = 100;
             wheels.Right = 100;
-            robo.setWheels(wheels);
+            robo.setWheels(wheels);*/
         }
-        else if (pos.y > (p2.y - 30))
+        else if (pos.y > (p2.y - 10))
         {
             lock_guard<mutex> lock(mtx);
             wheels.Left = 0;
@@ -405,14 +461,17 @@ void route(EPuck::Robot& robo)
         int psi_err = pos.psi - psi_ref;
         float wheels_diff = 0.01 * psi_err;
         turning(robo, wheels_diff);
+
+        float go = pos.y - p2.y;
         
-        if ((pos.y > (p2.y + 31)) && (pos.psi == -9000))
+        if ((pos.y > (p2.y + 11)) && (pos.psi == -9000))
         {
-            wheels.Left = 100;
+            going(robo, go);
+            /*wheels.Left = 100;
             wheels.Right = 100;
-            robo.setWheels(wheels);
+            robo.setWheels(wheels);*/
         }
-        else if (pos.y <= (p2.y + 30))
+        else if (pos.y <= (p2.y + 10))
         {
             lock_guard<mutex> lock(mtx);
             wheels.Left = 0;
