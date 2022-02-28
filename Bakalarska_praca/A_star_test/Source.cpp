@@ -40,7 +40,7 @@ struct start
 struct destination
 {
     int x = 3200;
-    int y = 3200;
+    int y = 1000;
 };
 struct path
 {
@@ -88,7 +88,6 @@ void generatepath(EPuck::Robot& robo, int _pixels)
 {
     int pixels = _pixels;
 
-    //Position_t pos = robo.position();
     array<array<int, 172>, 79> trueGrid
     {
         {
@@ -173,9 +172,7 @@ void generatepath(EPuck::Robot& robo, int _pixels)
           { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } },
         }
     };
-    //destination dest;
 
-    
     // Set 2d map size.
     generator.setWorldSize({ 172, 79 });
     // You can use a few heuristics : manhattan, euclidean or octagonal.
@@ -218,7 +215,6 @@ void generatepath(EPuck::Robot& robo, int _pixels)
                     p1.y = coordinate.y * TICKS_PER_PIXEL * pixels;
                     help.push_back(p1);
                     pathq.push_front(p1);
-                    //std::cout << p1.x << " " << p1.y << "\n";
                 }
                 pathq.pop_front();
             }
@@ -230,13 +226,10 @@ void generatepath(EPuck::Robot& robo, int _pixels)
                 wheels.Left = 0;
                 wheels.Right = 0;
                 robo.setWheels(wheels);
-                //int x, y;
                 cout << "Zadajte cielove suradnice pre x:" << endl;
                 cin >> dest.x;
                 cout << "Zadajte cielove suradnice pre y:" << endl;
                 cin >> dest.y;
-                //dest.x = x;
-                //dest.x = y;
             }
         }
     }
@@ -386,9 +379,6 @@ void route(EPuck::Robot& robo)
         if ((pos.x < (p2.x - 11)) && (pos.psi == 0))
         {
             going(robo, go);
-            /*wheels.Left = 100;
-            wheels.Right = 100;
-            robo.setWheels(wheels);*/
         }
         else if (pos.x >= p2.x - 10)
         {
@@ -413,9 +403,6 @@ void route(EPuck::Robot& robo)
         if ((pos.x > p2.x + 11) && (pos.psi == 0))
         {
             going(robo, go);
-            /*wheels.Left = -100;
-            wheels.Right = -100;
-            robo.setWheels(wheels);*/
         }
         else if (pos.x <= p2.x + 10)
         {
@@ -440,9 +427,6 @@ void route(EPuck::Robot& robo)
         if ((pos.y < (p2.y - 11)) && (pos.psi == 9000))
         {
             going(robo, go);
-            /*wheels.Left = 100;
-            wheels.Right = 100;
-            robo.setWheels(wheels);*/
         }
         else if (pos.y > (p2.y - 10))
         {
@@ -467,19 +451,18 @@ void route(EPuck::Robot& robo)
         if ((pos.y > (p2.y + 11)) && (pos.psi == -9000))
         {
             going(robo, go);
-            /*wheels.Left = 100;
-            wheels.Right = 100;
-            robo.setWheels(wheels);*/
         }
         else if (pos.y <= (p2.y + 10))
         {
             lock_guard<mutex> lock(mtx);
-            wheels.Left = 0;
-            wheels.Right = 0;
-            robo.setWheels(wheels);
-            src.y = p2.y;
-            pathq.pop_front();
-            p2 = pathq.front();
+            {
+                wheels.Left = 0;
+                wheels.Right = 0;
+                robo.setWheels(wheels);
+                src.y = p2.y;
+                pathq.pop_front();
+                p2 = pathq.front();
+            }
         }
     }
 }
@@ -562,11 +545,11 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     //robots radius
     int R = (int)(0.035 * TICKS_PER_METER / TICKS_PER_PIXEL);
 
-    float radius = 0.009; //robot radius for obstacle  
+    float radius = 0.007; //robot radius for obstacle  
     //proximity from sensors
     Proximity_t prox = robo.proximity();
     Wheels_t wheels = robo.wheels();
-    float degree = (float)pos.psi * 0.012 * M_PI / 180.0;
+    float degree = (float)pos.psi * 0.01 * M_PI / 180.0;
 
     obstacle point;
   
@@ -698,6 +681,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         int y = (int)vpoint[i].y / TICKS_PER_PIXEL;
         rectangle(imagegen, Point(x, y + 1), Point(x + 1, y), Scalar(0, 255, 0), FILLED);
     }
+
     // robot
     circle(imagegen, Point(pos.x / TICKS_PER_PIXEL, pos.y / TICKS_PER_PIXEL), R, Scalar(255, 0, 0), FILLED);  
 
