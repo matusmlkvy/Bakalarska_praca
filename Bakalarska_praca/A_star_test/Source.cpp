@@ -177,7 +177,7 @@ void generatepath(EPuck::Robot& robo, int _pixels)
     generator.setWorldSize({ 172, 79 });
     // You can use a few heuristics : manhattan, euclidean or octagonal.
     generator.setHeuristic(AStar::Heuristic::euclidean);
-    generator.setDiagonalMovement(false);
+    generator.setDiagonalMovement(true);
     
     /*for (int ky = 0; ky < 79; ky++)
     {
@@ -367,6 +367,7 @@ void route(EPuck::Robot& robo)
         pathq.pop_front();
         p2 = pathq.front();
     }*/
+    //east
     if (src.x < p2.x)
     {
         int psi_ref = 0;
@@ -388,9 +389,13 @@ void route(EPuck::Robot& robo)
             robo.setWheels(wheels);
             src.x = p2.x;
             pathq.pop_front();
-            p2 = pathq.front();
+            if (pathq.size() != 0)
+            {
+                p2 = pathq.front();
+            }
         }        
     }
+    //west
     if (src.x > p2.x)
     {
         int psi_ref = 0;
@@ -412,9 +417,13 @@ void route(EPuck::Robot& robo)
             robo.setWheels(wheels);
             src.x = p2.x;
             pathq.pop_front();
-            p2 = pathq.front();
+            if (pathq.size() != 0)
+            {
+                p2 = pathq.front();
+            }
         }
     }
+    //north
     if (src.y < p2.y)
     {
         int psi_ref = 9000;
@@ -428,7 +437,7 @@ void route(EPuck::Robot& robo)
         {
             going(robo, go);
         }
-        else if (pos.y > (p2.y - 10))
+        else if (pos.y >= (p2.y - 10))
         {
             lock_guard<mutex> lock(mtx);
             wheels.Left = 0;
@@ -436,9 +445,13 @@ void route(EPuck::Robot& robo)
             robo.setWheels(wheels);
             src.y = p2.y;
             pathq.pop_front();
-            p2 = pathq.front();
+            if (pathq.size() != 0)
+            {
+                p2 = pathq.front();
+            }
         }
     }
+    //south
     if (src.y > p2.y)
     {
         int psi_ref = -9000;
@@ -461,6 +474,128 @@ void route(EPuck::Robot& robo)
                 robo.setWheels(wheels);
                 src.y = p2.y;
                 pathq.pop_front();
+                if (pathq.size() != 0)
+                {
+                    p2 = pathq.front();
+                }
+            }
+        }
+    }
+    //north-east
+    if ((src.x < p2.x) && (src.y < p2.y))
+    {
+        int psi_ref = 4500;
+        int psi_err = pos.psi - psi_ref;
+        float wheels_diff = 0.01 * psi_err;
+        turning(robo, wheels_diff);
+
+        float go = sqrt(pow((p2.x - pos.x),2)+pow((p2.y - pos.y),2));
+
+        if ((pos.x < (p2.x - 11)) && (pos.y < (p2.y - 11)) && (pos.psi == 4500))
+        {
+            going(robo, go);
+        }
+        else if ((pos.x >= p2.x - 10) && (pos.y >= (p2.y - 10)))
+        {
+            lock_guard<mutex> lock(mtx);
+            wheels.Left = 0;
+            wheels.Right = 0;
+            robo.setWheels(wheels);
+            src.x = p2.x;
+            src.y = p2.y;
+            pathq.pop_front();
+            if (pathq.size() != 0)
+            {
+                p2 = pathq.front();
+            }
+        }
+    }
+    //south-east
+    if ((src.x < p2.x) && (src.y > p2.y))
+    {
+        int psi_ref = -4500;
+        int psi_err = pos.psi - psi_ref;
+        float wheels_diff = 0.01 * psi_err;
+        turning(robo, wheels_diff);
+
+        float go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
+
+        if ((pos.x < (p2.x - 11)) && (pos.y > (p2.y + 11)) && (pos.psi == -4500))
+        {
+            going(robo, go);
+        }
+        else if ((pos.x >= p2.x - 10) && (pos.y <= (p2.y + 10)))
+        {
+            lock_guard<mutex> lock(mtx);
+            wheels.Left = 0;
+            wheels.Right = 0;
+            robo.setWheels(wheels);
+            src.y = p2.y;
+            src.x = p2.x;
+            pathq.pop_front();
+            if (pathq.size() != 0)
+            {
+                p2 = pathq.front();
+            }
+        }
+    }
+    //north-west
+    if ((src.x > p2.x) && (src.y < p2.y))
+    {
+        int psi_ref = 13500;
+        int psi_err = pos.psi - psi_ref;
+        float wheels_diff = 0.01 * psi_err;
+        turning(robo, wheels_diff);
+
+        float go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
+
+        if ((pos.x > (p2.x + 11)) && (pos.y < (p2.y - 11)) && (pos.psi == 13500))
+        {
+            going(robo, go);
+        }
+        else if ((pos.x <= p2.x + 10) && (pos.y >= (p2.y - 10)))
+        {
+            lock_guard<mutex> lock(mtx);
+            {
+                wheels.Left = 0;
+                wheels.Right = 0;
+                robo.setWheels(wheels);
+                src.y = p2.y;
+                src.x = p2.x;
+                pathq.pop_front();
+                if (pathq.size() != 0)
+                {
+                    p2 = pathq.front();
+                }
+            }
+        }
+
+    }
+    //south-west
+    if ((src.x > p2.x) && (src.y > p2.y))
+    {
+        int psi_ref = -13500;
+        int psi_err = pos.psi - psi_ref;
+        float wheels_diff = 0.01 * psi_err;
+        turning(robo, wheels_diff);
+
+        float go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
+
+        if ((pos.x > (p2.x + 11)) && (pos.y > (p2.y + 11)) && (pos.psi == -13500))
+        {
+            going(robo, go);
+        }
+        else if ((pos.x <= p2.x + 10) && (pos.y <= (p2.y + 10)))
+        {
+            lock_guard<mutex> lock(mtx);
+            wheels.Left = 0;
+            wheels.Right = 0;
+            robo.setWheels(wheels);
+            src.x = p2.x;
+            src.y = p2.y;
+            pathq.pop_front();
+            if (pathq.size() != 0)
+            {
                 p2 = pathq.front();
             }
         }
@@ -545,7 +680,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     //robots radius
     int R = (int)(0.035 * TICKS_PER_METER / TICKS_PER_PIXEL);
 
-    float radius = 0.007; //robot radius for obstacle  
+    float radius = 0.0065; //robot radius for obstacle  
     //proximity from sensors
     Proximity_t prox = robo.proximity();
     Wheels_t wheels = robo.wheels();
