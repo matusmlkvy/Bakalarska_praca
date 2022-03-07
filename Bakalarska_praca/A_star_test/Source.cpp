@@ -40,7 +40,7 @@ struct start
 struct destination
 {
     int x = 3200;
-    int y = 1000;
+    int y = 4000;
 };
 struct path
 {
@@ -322,8 +322,8 @@ void going(EPuck::Robot& robo, float _differ)
     }
     else if ((going_dif <= 10) && (going_dif > 0))
     {
-        wheels.Left = 20;
-        wheels.Right = 20;
+        wheels.Left = 15;
+        wheels.Right = 15;
         robo.setWheels(wheels);
     }
 
@@ -342,8 +342,8 @@ void going(EPuck::Robot& robo, float _differ)
     }
     else if ((going_dif >= -10) && (going_dif < 0))
     {
-        wheels.Left = -20;
-        wheels.Right = -20;
+        wheels.Left = -15;
+        wheels.Right = -15;
         robo.setWheels(wheels);
     }
 
@@ -721,7 +721,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     }
     if (prox.L_50deg > 0)
     {
-        for (int i = 45; i <= 55; i = i + 5)
+        for (int i = 40; i <= 60; i = i + 5)
         {
             float d = 15000.0 / (float)prox.L_50deg + radius * TICKS_PER_METER;
             point.x = (pos.x + d * cos(degree - (i / 180.0) * M_PI));
@@ -781,7 +781,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     }
     if (prox.R_50deg > 0)
     {
-        for (int i = 45; i <= 55; i = i + 5)
+        for (int i = 40; i <= 60; i = i + 5)
         {
             float d = 15000.0 / (float)prox.R_50deg + radius * TICKS_PER_METER;
             point.x = (pos.x + d * cos(degree + (i / 180.0) * M_PI));
