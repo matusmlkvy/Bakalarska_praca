@@ -175,7 +175,7 @@ bool AStar::Generator::detectCollision(Vec2i coordinates_)
     }
     return false;
 }
-
+//prebehnut vo fore cely vektor a hlavne pozriet ci sa nenachadza v robotovi prekazka
 AStar::Vec2i AStar::Heuristic::getDelta(Vec2i source_, Vec2i target_)
 {
     return{ abs(source_.x - target_.x),  abs(source_.y - target_.y) };

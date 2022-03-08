@@ -39,8 +39,8 @@ struct start
 };
 struct destination
 {
-    int x = 3200;
-    int y = 4000;
+    int x = 2000;
+    int y = 3200;
 };
 struct path
 {
@@ -361,14 +361,15 @@ void route(EPuck::Robot& robo)
         else
             return;
     }
-    /*if (src.x == p2.x)
+
+    /*float go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
+    if (go == 0)
     {
-        src.x = p2.x;
         pathq.pop_front();
         p2 = pathq.front();
     }*/
     //east
-    if (src.x < p2.x)
+    if (pos.x < p2.x)
     {
         int psi_ref = 0;
         int psi_err = pos.psi - psi_ref;
@@ -377,11 +378,11 @@ void route(EPuck::Robot& robo)
 
         float go = p2.x - pos.x;
 
-        if ((pos.x < (p2.x - 11)) && (pos.psi == 0))
+        if ((go > 10) && (pos.psi == 0))
         {
             going(robo, go);
         }
-        else if (pos.x >= p2.x - 10)
+        else if (go < 9)
         {
             lock_guard<mutex> lock(mtx);
             wheels.Left = 0;
@@ -396,7 +397,7 @@ void route(EPuck::Robot& robo)
         }        
     }
     //west
-    if (src.x > p2.x)
+    if (pos.x > p2.x)
     {
         int psi_ref = 0;
         int psi_err = pos.psi - psi_ref;
@@ -405,11 +406,12 @@ void route(EPuck::Robot& robo)
 
         float go = p2.x - pos.x;
        
-        if ((pos.x > p2.x + 11) && (pos.psi == 0))
+        if ((go < -10) && (pos.psi == 0))
         {
+            //go = -go;
             going(robo, go);
         }
-        else if (pos.x <= p2.x + 10)
+        else if (go > -9)
         {
             lock_guard<mutex> lock(mtx);
             wheels.Left = 0;
@@ -423,8 +425,8 @@ void route(EPuck::Robot& robo)
             }
         }
     }
-    //north
-    if (src.y < p2.y)
+    //south
+    if (pos.y < p2.y)
     {
         int psi_ref = 9000;
         int psi_err = pos.psi - psi_ref;
@@ -433,11 +435,11 @@ void route(EPuck::Robot& robo)
 
         float go = p2.y - pos.y;
         
-        if ((pos.y < (p2.y - 11)) && (pos.psi == 9000))
+        if ((go > 10) && (pos.psi == 9000))
         {
             going(robo, go);
         }
-        else if (pos.y >= (p2.y - 10))
+        else if (go < 9)
         {
             lock_guard<mutex> lock(mtx);
             wheels.Left = 0;
@@ -451,8 +453,8 @@ void route(EPuck::Robot& robo)
             }
         }
     }
-    //south
-    if (src.y > p2.y)
+    //north
+    if (pos.y > p2.y)
     {
         int psi_ref = -9000;
         int psi_err = pos.psi - psi_ref;
@@ -461,11 +463,11 @@ void route(EPuck::Robot& robo)
 
         float go = pos.y - p2.y;
         
-        if ((pos.y > (p2.y + 11)) && (pos.psi == -9000))
+        if ((go > 10) && (pos.psi == -9000))
         {
             going(robo, go);
         }
-        else if (pos.y <= (p2.y + 10))
+        else if (go < 9)
         {
             lock_guard<mutex> lock(mtx);
             {
@@ -481,8 +483,8 @@ void route(EPuck::Robot& robo)
             }
         }
     }
-    //north-east
-    if ((src.x < p2.x) && (src.y < p2.y))
+    //south-east
+    if ((pos.x < p2.x) && (pos.y < p2.y))
     {
         int psi_ref = 4500;
         int psi_err = pos.psi - psi_ref;
@@ -491,11 +493,11 @@ void route(EPuck::Robot& robo)
 
         float go = sqrt(pow((p2.x - pos.x),2)+pow((p2.y - pos.y),2));
 
-        if ((pos.x < (p2.x - 11)) && (pos.y < (p2.y - 11)) && (pos.psi == 4500))
+        if ((go > 10) && (pos.psi == 4500))
         {
             going(robo, go);
         }
-        else if ((pos.x >= p2.x - 10) && (pos.y >= (p2.y - 10)))
+        else if (go < 9)
         {
             lock_guard<mutex> lock(mtx);
             wheels.Left = 0;
@@ -510,8 +512,8 @@ void route(EPuck::Robot& robo)
             }
         }
     }
-    //south-east
-    if ((src.x < p2.x) && (src.y > p2.y))
+    //north-east
+    if ((pos.x < p2.x) && (pos.y > p2.y))
     {
         int psi_ref = -4500;
         int psi_err = pos.psi - psi_ref;
@@ -520,11 +522,11 @@ void route(EPuck::Robot& robo)
 
         float go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
 
-        if ((pos.x < (p2.x - 11)) && (pos.y > (p2.y + 11)) && (pos.psi == -4500))
+        if ((go > 10) && (pos.psi == -4500))
         {
             going(robo, go);
         }
-        else if ((pos.x >= p2.x - 10) && (pos.y <= (p2.y + 10)))
+        else if (go < 9)
         {
             lock_guard<mutex> lock(mtx);
             wheels.Left = 0;
@@ -539,8 +541,8 @@ void route(EPuck::Robot& robo)
             }
         }
     }
-    //north-west
-    if ((src.x > p2.x) && (src.y < p2.y))
+    //south-west
+    if ((pos.x > p2.x) && (pos.y < p2.y))
     {
         int psi_ref = 13500;
         int psi_err = pos.psi - psi_ref;
@@ -549,11 +551,11 @@ void route(EPuck::Robot& robo)
 
         float go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
 
-        if ((pos.x > (p2.x + 11)) && (pos.y < (p2.y - 11)) && (pos.psi == 13500))
+        if ((go > 10) && (pos.psi == 13500))
         {
             going(robo, go);
         }
-        else if ((pos.x <= p2.x + 10) && (pos.y >= (p2.y - 10)))
+        else if (go < 9)
         {
             lock_guard<mutex> lock(mtx);
             {
@@ -571,8 +573,8 @@ void route(EPuck::Robot& robo)
         }
 
     }
-    //south-west
-    if ((src.x > p2.x) && (src.y > p2.y))
+    //north-west
+    if ((pos.x > p2.x) && (pos.y > p2.y))
     {
         int psi_ref = -13500;
         int psi_err = pos.psi - psi_ref;
@@ -581,11 +583,11 @@ void route(EPuck::Robot& robo)
 
         float go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
 
-        if ((pos.x > (p2.x + 11)) && (pos.y > (p2.y + 11)) && (pos.psi == -13500))
+        if ((go > 10) && (pos.psi == -13500))
         {
             going(robo, go);
         }
-        else if ((pos.x <= p2.x + 10) && (pos.y <= (p2.y + 10)))
+        else if (go < 9)
         {
             lock_guard<mutex> lock(mtx);
             wheels.Left = 0;
@@ -680,7 +682,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     //robots radius
     int R = (int)(0.035 * TICKS_PER_METER / TICKS_PER_PIXEL);
 
-    float radius = 0.0065; //robot radius for obstacle  
+    float radius = 0.035; //robot radius for obstacle  
     //proximity from sensors
     Proximity_t prox = robo.proximity();
     Wheels_t wheels = robo.wheels();
