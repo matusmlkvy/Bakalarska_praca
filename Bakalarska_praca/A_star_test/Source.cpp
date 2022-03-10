@@ -349,6 +349,21 @@ void going(EPuck::Robot& robo, float _differ)
 
 }
 
+void newroute(EPuck::Robot& robo)
+{
+    Wheels_t wheels;
+    path p2;
+    lock_guard<mutex> lock(mtx);
+    wheels.Left = 0;
+    wheels.Right = 0;
+    robo.setWheels(wheels);
+    pathq.pop_front();
+    if (pathq.size() != 0)
+    {
+        p2 = pathq.front();
+    }
+}
+
 void route(EPuck::Robot& robo)
 {
     Position_t pos = robo.position();
@@ -378,22 +393,13 @@ void route(EPuck::Robot& robo)
 
         float go = p2.x - pos.x;
 
-        if ((go > 10) && (pos.psi == 0))
+        if ((go > 20) && (pos.psi == 0))
         {
             going(robo, go);
         }
-        else if (go < 9)
+        else if (go < 19)
         {
-            lock_guard<mutex> lock(mtx);
-            wheels.Left = 0;
-            wheels.Right = 0;
-            robo.setWheels(wheels);
-            src.x = p2.x;
-            pathq.pop_front();
-            if (pathq.size() != 0)
-            {
-                p2 = pathq.front();
-            }
+            newroute(robo);
         }        
     }
     //west
@@ -406,23 +412,14 @@ void route(EPuck::Robot& robo)
 
         float go = p2.x - pos.x;
        
-        if ((go < -10) && (pos.psi == 0))
+        if ((go < -20) && (pos.psi == 0))
         {
             //go = -go;
             going(robo, go);
         }
-        else if (go > -9)
+        else if (go > -19)
         {
-            lock_guard<mutex> lock(mtx);
-            wheels.Left = 0;
-            wheels.Right = 0;
-            robo.setWheels(wheels);
-            src.x = p2.x;
-            pathq.pop_front();
-            if (pathq.size() != 0)
-            {
-                p2 = pathq.front();
-            }
+            newroute(robo);
         }
     }
     //south
@@ -435,22 +432,13 @@ void route(EPuck::Robot& robo)
 
         float go = p2.y - pos.y;
         
-        if ((go > 10) && (pos.psi == 9000))
+        if ((go > 20) && (pos.psi == 9000))
         {
             going(robo, go);
         }
-        else if (go < 9)
+        else if (go < 19)
         {
-            lock_guard<mutex> lock(mtx);
-            wheels.Left = 0;
-            wheels.Right = 0;
-            robo.setWheels(wheels);
-            src.y = p2.y;
-            pathq.pop_front();
-            if (pathq.size() != 0)
-            {
-                p2 = pathq.front();
-            }
+            newroute(robo);
         }
     }
     //north
@@ -463,24 +451,13 @@ void route(EPuck::Robot& robo)
 
         float go = pos.y - p2.y;
         
-        if ((go > 10) && (pos.psi == -9000))
+        if ((go > 20) && (pos.psi == -9000))
         {
             going(robo, go);
         }
-        else if (go < 9)
+        else if (go < 19)
         {
-            lock_guard<mutex> lock(mtx);
-            {
-                wheels.Left = 0;
-                wheels.Right = 0;
-                robo.setWheels(wheels);
-                src.y = p2.y;
-                pathq.pop_front();
-                if (pathq.size() != 0)
-                {
-                    p2 = pathq.front();
-                }
-            }
+            newroute(robo);
         }
     }
     //south-east
@@ -493,23 +470,13 @@ void route(EPuck::Robot& robo)
 
         float go = sqrt(pow((p2.x - pos.x),2)+pow((p2.y - pos.y),2));
 
-        if ((go > 10) && (pos.psi == 4500))
+        if ((go > 20) && (pos.psi == 4500))
         {
             going(robo, go);
         }
-        else if (go < 9)
+        else if (go < 19)
         {
-            lock_guard<mutex> lock(mtx);
-            wheels.Left = 0;
-            wheels.Right = 0;
-            robo.setWheels(wheels);
-            src.x = p2.x;
-            src.y = p2.y;
-            pathq.pop_front();
-            if (pathq.size() != 0)
-            {
-                p2 = pathq.front();
-            }
+            newroute(robo);
         }
     }
     //north-east
@@ -522,23 +489,13 @@ void route(EPuck::Robot& robo)
 
         float go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
 
-        if ((go > 10) && (pos.psi == -4500))
+        if ((go > 20) && (pos.psi == -4500))
         {
             going(robo, go);
         }
-        else if (go < 9)
+        else if (go < 19)
         {
-            lock_guard<mutex> lock(mtx);
-            wheels.Left = 0;
-            wheels.Right = 0;
-            robo.setWheels(wheels);
-            src.y = p2.y;
-            src.x = p2.x;
-            pathq.pop_front();
-            if (pathq.size() != 0)
-            {
-                p2 = pathq.front();
-            }
+            newroute(robo);
         }
     }
     //south-west
@@ -551,25 +508,13 @@ void route(EPuck::Robot& robo)
 
         float go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
 
-        if ((go > 10) && (pos.psi == 13500))
+        if ((go > 20) && (pos.psi == 13500))
         {
             going(robo, go);
         }
-        else if (go < 9)
+        else if (go < 19)
         {
-            lock_guard<mutex> lock(mtx);
-            {
-                wheels.Left = 0;
-                wheels.Right = 0;
-                robo.setWheels(wheels);
-                src.y = p2.y;
-                src.x = p2.x;
-                pathq.pop_front();
-                if (pathq.size() != 0)
-                {
-                    p2 = pathq.front();
-                }
-            }
+            newroute(robo);
         }
 
     }
@@ -583,23 +528,13 @@ void route(EPuck::Robot& robo)
 
         float go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
 
-        if ((go > 10) && (pos.psi == -13500))
+        if ((go > 20) && (pos.psi == -13500))
         {
             going(robo, go);
         }
-        else if (go < 9)
+        else if (go < 19)
         {
-            lock_guard<mutex> lock(mtx);
-            wheels.Left = 0;
-            wheels.Right = 0;
-            robo.setWheels(wheels);
-            src.x = p2.x;
-            src.y = p2.y;
-            pathq.pop_front();
-            if (pathq.size() != 0)
-            {
-                p2 = pathq.front();
-            }
+            newroute(robo);
         }
     }
 }
