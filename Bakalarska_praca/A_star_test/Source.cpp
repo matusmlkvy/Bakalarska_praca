@@ -384,7 +384,7 @@ void route(EPuck::Robot& robo)
         p2 = pathq.front();
     }*/
     //east
-    if (pos.x < p2.x)
+    if (pos.x < p2.x - 5)
     {
         int psi_ref = 0;
         int psi_err = pos.psi - psi_ref;
@@ -393,7 +393,7 @@ void route(EPuck::Robot& robo)
 
         float go = p2.x - pos.x;
 
-        if ((go > 20) && (pos.psi == 0))
+        if ((go > 20) && ((pos.psi == 0) || (pos.psi == 1)))
         {
             going(robo, go);
         }
@@ -403,7 +403,7 @@ void route(EPuck::Robot& robo)
         }        
     }
     //west
-    if (pos.x > p2.x)
+    if (pos.x > p2.x + 5)
     {
         int psi_ref = 0;
         int psi_err = pos.psi - psi_ref;
@@ -423,7 +423,7 @@ void route(EPuck::Robot& robo)
         }
     }
     //south
-    if (pos.y < p2.y)
+    if (pos.y < p2.y - 5)
     {
         int psi_ref = 9000;
         int psi_err = pos.psi - psi_ref;
@@ -442,7 +442,7 @@ void route(EPuck::Robot& robo)
         }
     }
     //north
-    if (pos.y > p2.y)
+    if (pos.y > p2.y + 5)
     {
         int psi_ref = -9000;
         int psi_err = pos.psi - psi_ref;
@@ -461,7 +461,7 @@ void route(EPuck::Robot& robo)
         }
     }
     //south-east
-    if ((pos.x < p2.x) && (pos.y < p2.y))
+    if ((pos.x < p2.x - 5) && (pos.y < p2.y - 5))
     {
         int psi_ref = 4500;
         int psi_err = pos.psi - psi_ref;
@@ -480,7 +480,7 @@ void route(EPuck::Robot& robo)
         }
     }
     //north-east
-    if ((pos.x < p2.x) && (pos.y > p2.y))
+    if ((pos.x < p2.x - 5) && (pos.y > p2.y + 5))
     {
         int psi_ref = -4500;
         int psi_err = pos.psi - psi_ref;
@@ -499,7 +499,7 @@ void route(EPuck::Robot& robo)
         }
     }
     //south-west
-    if ((pos.x > p2.x) && (pos.y < p2.y))
+    if ((pos.x > p2.x + 5) && (pos.y < p2.y - 5))
     {
         int psi_ref = 13500;
         int psi_err = pos.psi - psi_ref;
@@ -519,7 +519,7 @@ void route(EPuck::Robot& robo)
 
     }
     //north-west
-    if ((pos.x > p2.x) && (pos.y > p2.y))
+    if ((pos.x > p2.x + 5) && (pos.y > p2.y + 5))
     {
         int psi_ref = -13500;
         int psi_err = pos.psi - psi_ref;
