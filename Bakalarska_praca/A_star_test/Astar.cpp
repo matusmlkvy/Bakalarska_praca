@@ -167,13 +167,27 @@ void AStar::Generator::releaseNodes(NodeSet& nodes_)
 bool AStar::Generator::detectCollision(Vec2i coordinates_)
 {
     std::lock_guard<std::mutex> locker(lock_walls);
-    if (coordinates_.x < 0 || coordinates_.x >= worldSize.x ||
+    int xc = coordinates_.x;
+    int yc = coordinates_.y;
+    for (int i = 0; i < walls.size(); i++)
+    {
+        int xw = walls[i].x;
+        int yw = walls[i].y;
+        if (coordinates_.x < 0 || coordinates_.x >= worldSize.x ||
+            coordinates_.y < 0 || coordinates_.y >= worldSize.y || 
+            abs(xw - xc) < 4 && abs(yw - yc) < 4)
+        {
+            return true;
+        }
+    }
+    return false;
+    /*if (coordinates_.x < 0 || coordinates_.x >= worldSize.x ||
         coordinates_.y < 0 || coordinates_.y >= worldSize.y ||
         std::find(walls.begin(), walls.end(), coordinates_) != walls.end())
     {
         return true;
     }
-    return false;
+    return false;*/
 }
 //prebehnut vo fore cely vektor a hlavne pozriet ci sa nenachadza v robotovi prekazka
 AStar::Vec2i AStar::Heuristic::getDelta(Vec2i source_, Vec2i target_)

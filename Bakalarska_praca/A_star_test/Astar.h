@@ -10,6 +10,7 @@
 #include <functional>
 #include <set>
 #include <mutex>
+#include <math.h>
 
 namespace AStar
 {
