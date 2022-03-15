@@ -32,8 +32,9 @@ namespace AStar
         uint G, H;
         Vec2i coordinates;
         Node* parent;
+        int dir;
 
-        Node(Vec2i coord_, Node* parent_ = nullptr);
+        Node(Vec2i coord_, Node* parent_ = nullptr, int dir_=0);
         uint getScore();
     };
 
@@ -52,7 +53,7 @@ namespace AStar
         void setWorldSize(Vec2i worldSize_);
         void setDiagonalMovement(bool enable_);
         void setHeuristic(HeuristicFunction heuristic_);
-        CoordinateList findPath(Vec2i source_, Vec2i target_);
+        CoordinateList findPath(Vec2i source_, Vec2i target_, int dir_);
         void addCollision(Vec2i coordinates_);
         void addCollisionHelp(Vec2i coordinates_);
         void removeCollision(Vec2i coordinates_);
@@ -63,6 +64,7 @@ namespace AStar
         CoordinateList direction, walls;
         Vec2i worldSize;
         uint directions;
+        std::vector<int> directionAngles;
     };
 
     class Heuristic

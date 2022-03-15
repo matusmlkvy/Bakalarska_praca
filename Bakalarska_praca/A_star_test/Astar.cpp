@@ -14,10 +14,11 @@ AStar::Vec2i operator + (const AStar::Vec2i& left_, const AStar::Vec2i& right_)
     return{ left_.x + right_.x, left_.y + right_.y };
 }
 
-AStar::Node::Node(Vec2i coordinates_, Node* parent_)
+AStar::Node::Node(Vec2i coordinates_, Node* parent_, int dir_)
 {
     parent = parent_;
     coordinates = coordinates_;
+    dir = dir_;
     G = H = 0;
 }
 
@@ -34,6 +35,8 @@ AStar::Generator::Generator()
         { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 },
         { -1, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 }
     };
+    //zadefinovat uhly pomocou 45,90 ....
+    directionAngles = {-90, 0, 90, 180, 135, -45, -135, 45};
 }
 
 void AStar::Generator::setWorldSize(Vec2i worldSize_)
@@ -72,13 +75,13 @@ void AStar::Generator::clearCollisions()
     walls.clear();
 }
 
-AStar::CoordinateList AStar::Generator::findPath(Vec2i source_, Vec2i target_)
+AStar::CoordinateList AStar::Generator::findPath(Vec2i source_, Vec2i target_, int dir_) //zadeklarovat
 {
     Node* current = nullptr;
     NodeSet openSet, closedSet;
     openSet.reserve(500);
     closedSet.reserve(500);
-    openSet.push_back(new Node(source_));
+    openSet.push_back(new Node(source_, nullptr, dir_));
 
     while (!openSet.empty())
     {
@@ -106,18 +109,21 @@ AStar::CoordinateList AStar::Generator::findPath(Vec2i source_, Vec2i target_)
         for (uint i = 0; i < directions; ++i)
         {
             Vec2i newCoordinates(current->coordinates + direction[i]);
+            int newDir = directionAngles[i];
             if (detectCollision(newCoordinates) ||
                 findNodeOnList(closedSet, newCoordinates))
             {
                 continue;
             }
-
-            uint totalCost = current->G + ((i < 4) ? 10 : 14);
+            
+            int dirDiff = newDir - current->dir;
+            dirDiff -= ((dirDiff + 180) / 360) * 360;
+            uint totalCost = current->G + ((i < 4) ? 10 : 14) + (newDir != current->dir ? 80 : 0);
 
             Node* successor = findNodeOnList(openSet, newCoordinates);
             if (successor == nullptr)
             {
-                successor = new Node(newCoordinates, current);
+                successor = new Node(newCoordinates, current, newDir);
                 successor->G = totalCost;
                 successor->H = heuristic(successor->coordinates, target_);
                 openSet.push_back(successor);
@@ -126,6 +132,7 @@ AStar::CoordinateList AStar::Generator::findPath(Vec2i source_, Vec2i target_)
             {
                 successor->parent = current;
                 successor->G = totalCost;
+                successor->dir = newDir;
             }
         }
     }
