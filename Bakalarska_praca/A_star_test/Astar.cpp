@@ -36,7 +36,7 @@ AStar::Generator::Generator()
         { -1, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 }
     };
     //zadefinovat uhly pomocou 45,90 ....
-    directionAngles = {-90, 0, 90, 180, 135, -45, -135, 45};
+    directionAngles = {-90, 0, 90, -180, 135, -45, -135, 45};
 }
 
 void AStar::Generator::setWorldSize(Vec2i worldSize_)

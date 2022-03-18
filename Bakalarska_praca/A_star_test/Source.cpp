@@ -13,6 +13,8 @@
 #include <opencv2/imgproc.hpp>
 #include <queue>
 #include <thread>
+#include <stdlib.h>
+#include <time.h>
 //#include <mutex>
 
 #include <OccupancyGrid.h>
@@ -96,6 +98,8 @@ void generatepath(EPuck::Robot& robo, int _pixels)
     // You can use a few heuristics : manhattan, euclidean or octagonal.
     generator.setHeuristic(AStar::Heuristic::euclidean);
     generator.setDiagonalMovement(true);
+
+    
     
     /*for (int ky = 0; ky < 79; ky++)
     {
@@ -146,10 +150,15 @@ void generatepath(EPuck::Robot& robo, int _pixels)
                 wheels.Left = 0;
                 wheels.Right = 0;
                 robo.setWheels(wheels);
-                cout << "Zadajte cielove suradnice pre x:" << endl;
+                int x = rand() % 170 + 1;
+                dest.x = x * 80;
+                int y = rand() % 77 + 1;
+                dest.y = y * 80;
+                cout << dest.x <<"      "<< dest.y;
+                /*cout << "Zadajte cielove suradnice pre x:" << endl;
                 cin >> dest.x;
                 cout << "Zadajte cielove suradnice pre y:" << endl;
-                cin >> dest.y;
+                cin >> dest.y;*/
             }
         }
     }
@@ -313,14 +322,14 @@ void route(EPuck::Robot& robo)
     //west
     if (pos.x > p2.x + ch)
     {
-        int psi_ref = 0;
+        int psi_ref = 18000;
         int psi_err = pos.psi - psi_ref;
         float wheels_diff = 0.01 * psi_err;
         turning(robo, wheels_diff);
 
-        float go = p2.x - pos.x;
+        float go = pos.x - p2.x;
        
-        if ((go < -ah) && (pos.psi == 0))
+        if ((go > ah) && (((pos.psi <= -17995) && (pos.psi >= -18000)) || ((pos.psi >= 17995) && (pos.psi <= 18000))))
         {
             going(robo, go);
         }
@@ -738,10 +747,13 @@ void runSimulation(EPuck::Robot& robo, int _pixels)
 int main()
 {
     int pixels;
+    srand(time(NULL));
     //create object robot
     Robot robo;
     //enable simulation
     robo.enableSimulation();
+
+    //enable real robot
     //robo.open("COM3");
     //robo.enableSensors();
 
