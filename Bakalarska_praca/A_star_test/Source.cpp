@@ -43,7 +43,7 @@ struct start
 struct destination
 {
     int x = 6000;
-    int y = 3200;
+    int y = 4000;
 };
 struct path
 {
@@ -287,6 +287,7 @@ void route(EPuck::Robot& robo)
 
     //tolerance in tick
     int ah = 10;
+    int bh = 6;
     int ch = 5;
 
     path p2;
@@ -314,10 +315,21 @@ void route(EPuck::Robot& robo)
 
         float go = p2.x - pos.x;
 
-        if ((go > ah) && ((pos.psi == 0) || (pos.psi == 1)))
+        if ((go >= ah) && ((pos.psi == 0) || (pos.psi == 1)))
         {
             going(robo, go);
-        }  
+        }
+        else if (go < bh)
+        {
+            lock_guard<mutex> lock(mtx);
+            if (pathq.size() > 1)
+            {
+                pathq.pop_front();
+                p2 = pathq.front();
+            }
+            else
+                return;
+        }
     }
     //west
     if (pos.x > p2.x + ch)
@@ -329,9 +341,20 @@ void route(EPuck::Robot& robo)
 
         float go = pos.x - p2.x;
        
-        if ((go > ah) && (((pos.psi <= -17995) && (pos.psi >= -18000)) || ((pos.psi >= 17995) && (pos.psi <= 18000))))
+        if ((go >= ah) && (((pos.psi <= -17995) && (pos.psi >= -18000)) || ((pos.psi >= 17995) && (pos.psi <= 18000))))
         {
             going(robo, go);
+        }
+        else if (go < bh)
+        {
+            lock_guard<mutex> lock(mtx);
+            if (pathq.size() > 1)
+            {
+                pathq.pop_front();
+                p2 = pathq.front();
+            }
+            else
+                return;
         }
     }
     //south
@@ -344,9 +367,20 @@ void route(EPuck::Robot& robo)
 
         float go = p2.y - pos.y;
         
-        if ((go > ah) && (pos.psi == 9000))
+        if ((go >= ah) && (pos.psi == 9000))
         {
             going(robo, go);
+        }
+        else if (go < bh)
+        {
+            lock_guard<mutex> lock(mtx);
+            if (pathq.size() > 1)
+            {
+                pathq.pop_front();
+                p2 = pathq.front();
+            }
+            else
+                return;
         }
     }
     //north
@@ -359,9 +393,20 @@ void route(EPuck::Robot& robo)
 
         float go = pos.y - p2.y;
         
-        if ((go > ah) && (pos.psi == -9000))
+        if ((go >= ah) && (pos.psi == -9000))
         {
             going(robo, go);
+        }
+        else if (go < bh)
+        {
+            lock_guard<mutex> lock(mtx);
+            if (pathq.size() > 1)
+            {
+                pathq.pop_front();
+                p2 = pathq.front();
+            }
+            else
+                return;
         }
     }
     //south-east
@@ -374,9 +419,20 @@ void route(EPuck::Robot& robo)
 
         float go = sqrt(pow((p2.x - pos.x),2)+pow((p2.y - pos.y),2));
 
-        if ((go > ah) && (pos.psi == 4500))
+        if ((go >= ah) && (pos.psi == 4500))
         {
             going(robo, go);
+        }
+        else if (go < bh)
+        {
+            lock_guard<mutex> lock(mtx);
+            if (pathq.size() > 1)
+            {
+                pathq.pop_front();
+                p2 = pathq.front();
+            }
+            else
+                return;
         }
     }
     //north-east
@@ -389,9 +445,20 @@ void route(EPuck::Robot& robo)
 
         float go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
 
-        if ((go > ah) && (pos.psi == -4500))
+        if ((go >= ah) && (pos.psi == -4500))
         {
             going(robo, go);
+        }
+        else if (go < bh)
+        {
+            lock_guard<mutex> lock(mtx);
+            if (pathq.size() > 1)
+            {
+                pathq.pop_front();
+                p2 = pathq.front();
+            }
+            else
+                return;
         }
     }
     //south-west
@@ -404,9 +471,20 @@ void route(EPuck::Robot& robo)
 
         float go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
 
-        if ((go > ah) && (pos.psi == 13500))
+        if ((go >= ah) && (pos.psi == 13500))
         {
             going(robo, go);
+        }
+        else if (go < bh)
+        {
+            lock_guard<mutex> lock(mtx);
+            if (pathq.size() > 1)
+            {
+                pathq.pop_front();
+                p2 = pathq.front();
+            }
+            else
+                return;
         }
     }
     //north-west
@@ -419,9 +497,20 @@ void route(EPuck::Robot& robo)
 
         float go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
 
-        if ((go > ah) && (pos.psi == -13500))
+        if ((go >= ah) && (pos.psi == -13500))
         {
             going(robo, go);
+        }
+        else if (go < bh)
+        {
+            lock_guard<mutex> lock(mtx);
+            if (pathq.size() > 1)
+            {
+                pathq.pop_front();
+                p2 = pathq.front();
+            }
+            else
+                return;
         }
     }
 }
