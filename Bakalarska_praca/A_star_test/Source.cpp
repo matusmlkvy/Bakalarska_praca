@@ -90,14 +90,14 @@ vector<path> help;
 void generatepath(EPuck::Robot& robo, int _pixels)
 {
     int pixels = _pixels;
-
+    srand(time(NULL));
     
 
     // Set 2d map size.
     generator.setWorldSize({ 172, 79 });
     // You can use a few heuristics : manhattan, euclidean or octagonal.
     generator.setHeuristic(AStar::Heuristic::euclidean);
-    generator.setDiagonalMovement(true);
+    generator.setDiagonalMovement(false);
 
     
     
@@ -168,6 +168,20 @@ void turning(EPuck::Robot& robo, float _diff)
 {
     float wheels_diff = _diff;
     Wheels_t wheels = robo.wheels();
+
+    /*if (wheels_diff > 0)
+    {
+        wheels.Left = -2 * wheels_diff;
+        wheels.Right = 2 * wheels_diff;
+        robo.setWheels(wheels);
+    }
+    if (wheels_diff < 0)
+    {
+        wheels.Left = 2 * wheels_diff;
+        wheels.Right = -2 * wheels_diff;
+        robo.setWheels(wheels);
+    }*/
+    
     if (wheels_diff > 45)
     {
         wheels.Left = -100;
@@ -286,9 +300,9 @@ void route(EPuck::Robot& robo)
     Wheels_t wheels = robo.wheels();
 
     //tolerance in tick
-    int ah = 10;
-    int bh = 6;
-    int ch = 5;
+    int ah = 40;
+    int bh = 1;
+    int ch = 30;
 
     path p2;
     {
@@ -299,14 +313,38 @@ void route(EPuck::Robot& robo)
             return;
     }
 
-    /*float go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
-    if (go == 0)
+    double go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
+
+    double psi_ref = atan2((p2.y - pos.y), (p2.x - pos.x)) * 180 / M_PI;
+    double wheels_diff = pos.psi * 0.01 - psi_ref;
+    wheels_diff -= round(wheels_diff / 360) * 360;
+
+    if ((wheels_diff > bh) || (wheels_diff < -bh))
     {
-        pathq.pop_front();
-        p2 = pathq.front();
-    }*/
+        turning(robo, wheels_diff);
+    }
+
+    if ((go >= ah) && ((wheels_diff < bh) && (wheels_diff > -bh)))
+    {
+        going(robo, go);
+    }
+    else if (go < ch)
+    {
+        lock_guard<mutex> lock(mtx);
+        if (pathq.size() > 1)
+        {
+            pathq.pop_front();
+            p2 = pathq.front();
+        }
+        else
+            return;
+    }
+    
+
+    
+    
     //east
-    if (pos.x < p2.x - ch)
+    /*if (pos.x < p2.x - ch)
     {
         int psi_ref = 0;
         int psi_err = pos.psi - psi_ref;
@@ -512,7 +550,7 @@ void route(EPuck::Robot& robo)
             else
                 return;
         }
-    }
+    }*/
 }
 
 
@@ -836,7 +874,7 @@ void runSimulation(EPuck::Robot& robo, int _pixels)
 int main()
 {
     int pixels;
-    srand(time(NULL));
+    
     //create object robot
     Robot robo;
     //enable simulation
@@ -856,15 +894,15 @@ int main()
     robo.setPosition(setpos);
 
     thread astar(generatepath, ref(robo), 8);
-    cout << "Zadajte velkost mriezky na zaciatku druheho generovania mapy: " << endl;
-    cin >> pixels;
+    //cout << "Zadajte velkost mriezky na zaciatku druheho generovania mapy: " << endl;
+    //cin >> pixels;
     
     /* Description of the Grid-
     1--> The cell is not blocked
     0--> The cell is blocked */
     
 
-    thread drawingmap(runSimulation, ref(robo), pixels);
+    thread drawingmap(runSimulation, ref(robo), 8);
     
     
     /*while (robo.simulationEnabled())

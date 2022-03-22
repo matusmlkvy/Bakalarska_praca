@@ -117,8 +117,8 @@ AStar::CoordinateList AStar::Generator::findPath(Vec2i source_, Vec2i target_, i
             }
             
             int dirDiff = newDir - current->dir;
-            dirDiff -= ((dirDiff + 180) / 360) * 360;
-            uint totalCost = current->G + ((i < 4) ? 10 : 14) + (newDir != current->dir ? 80 : 0);
+            dirDiff -= (int)(round((double)dirDiff / 360.0) * 360.0);
+            uint totalCost = current->G + ((i < 4) ? 10 : 14) + abs(dirDiff)/*(newDir != current->dir ? 80 : 0)*/;
 
             Node* successor = findNodeOnList(openSet, newCoordinates);
             if (successor == nullptr)
@@ -197,6 +197,7 @@ bool AStar::Generator::detectCollision(Vec2i coordinates_)
     return false;*/
 }
 //prebehnut vo fore cely vektor a hlavne pozriet ci sa nenachadza v robotovi prekazka
+
 AStar::Vec2i AStar::Heuristic::getDelta(Vec2i source_, Vec2i target_)
 {
     return{ abs(source_.x - target_.x),  abs(source_.y - target_.y) };
