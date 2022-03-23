@@ -85,8 +85,6 @@ bool isUnBlocked(const array<array<int, COL>, ROW>& grid, const Pair& point)
 
 
 vector<path> help;
-//template <size_t ROW, size_t COL>
-/*const array<array<int, COL>, ROW>& grid, */
 void generatepath(EPuck::Robot& robo, int _pixels)
 {
     int pixels = _pixels;
@@ -97,21 +95,9 @@ void generatepath(EPuck::Robot& robo, int _pixels)
     generator.setWorldSize({ 172, 79 });
     // You can use a few heuristics : manhattan, euclidean or octagonal.
     generator.setHeuristic(AStar::Heuristic::euclidean);
-    generator.setDiagonalMovement(false);
+    generator.setDiagonalMovement(true);
 
     
-    
-    /*for (int ky = 0; ky < 79; ky++)
-    {
-        for (int kx = 0; kx < 172; kx++)
-        {
-            Pair occupation(ky, kx);
-            if (!isUnBlocked(trueGrid, occupation))
-            {
-                generator.addCollision({ kx, ky });
-            }            
-        }
-    }*/
     while (robo.simulationEnabled())
     {
         Wheels_t wheels = robo.wheels();
@@ -164,132 +150,35 @@ void generatepath(EPuck::Robot& robo, int _pixels)
     }
 }
 
-void turning(EPuck::Robot& robo, float _diff)
+void turning(EPuck::Robot& robo, float angleErr)
 {
-    float wheels_diff = _diff;
     Wheels_t wheels = robo.wheels();
 
-    /*if (wheels_diff > 0)
-    {
-        wheels.Left = -2 * wheels_diff;
-        wheels.Right = 2 * wheels_diff;
-        robo.setWheels(wheels);
-    }
-    if (wheels_diff < 0)
-    {
-        wheels.Left = 2 * wheels_diff;
-        wheels.Right = -2 * wheels_diff;
-        robo.setWheels(wheels);
-    }*/
+    angleErr -= 360.0 * round(angleErr / 360.0);
     
-    if (wheels_diff > 45)
-    {
-        wheels.Left = -100;
-        wheels.Right = 100;
-        robo.setWheels(wheels);
-    }
-    else if ((wheels_diff <= 45) && (wheels_diff > 10))
-    {
-        wheels.Left = -50;
-        wheels.Right = 50;
-        robo.setWheels(wheels);
-    }
-    else if ((wheels_diff <= 10) && (wheels_diff > 2))
-    {
-        wheels.Left = -10;
-        wheels.Right = 10;
-        robo.setWheels(wheels);
-    }
-    else if ((wheels_diff <= 2) && (wheels_diff > 0.2))
-    {
-        wheels.Left = -5;
-        wheels.Right = 5;
-        robo.setWheels(wheels);
-    }
-    else if ((wheels_diff <= 0.2) && (wheels_diff > 0))
-    {
-        wheels.Left = -1;
-        wheels.Right = 1;
-        robo.setWheels(wheels);
-    }
+    if (angleErr > 45.0) angleErr = 45.0;
+    else if (angleErr < -45.0) angleErr = -45.0;
 
-    if (wheels_diff < -45)
-    {
-        wheels.Left = 100;
-        wheels.Right = -100;
-        robo.setWheels(wheels);
-    }
-    else if ((wheels_diff >= -45) && (wheels_diff < -10))
-    {
-        wheels.Left = 50;
-        wheels.Right = -50;
-        robo.setWheels(wheels);
-    }
-    else if ((wheels_diff >= -10) && (wheels_diff < -2))
-    {
-        wheels.Left = 10;
-        wheels.Right = -10;
-        robo.setWheels(wheels);
-    }
-    else if ((wheels_diff >= -2) && (wheels_diff < -0.2))
-    {
-        wheels.Left = 5;
-        wheels.Right = -5;
-        robo.setWheels(wheels);
-    }
-    else if ((wheels_diff >= -0.2) && (wheels_diff < 0))
-    {
-        wheels.Left = 1;
-        wheels.Right = -1;
-        robo.setWheels(wheels);
-    }
+    wheels.Left = -2 * angleErr;
+    wheels.Right = 2 * angleErr;
+    robo.setWheels(wheels);
 }
 
-void going(EPuck::Robot& robo, float _differ)
+void going(EPuck::Robot& robo, float _fwd, float _rot=0)
 {
-    float going_dif = _differ;
     Wheels_t wheels = robo.wheels();
 
-    //going forward
-    if (going_dif > 50)
-    {
-        wheels.Left = 100;
-        wheels.Right = 100;
-        robo.setWheels(wheels);
-    }
-    else if ((going_dif <= 50) && (going_dif > 10))
-    {
-        wheels.Left = 50;
-        wheels.Right = 50;
-        robo.setWheels(wheels);
-    }
-    else if ((going_dif <= 10) && (going_dif > 0))
-    {
-        wheels.Left = 15;
-        wheels.Right = 15;
-        robo.setWheels(wheels);
-    }
+    _rot -= 360.0 * round(_rot / 360.0);
 
-    //going back
-    if (going_dif < -50)
-    {
-        wheels.Left = -150;
-        wheels.Right = -150;
-        robo.setWheels(wheels);
-    }
-    else if ((going_dif >= -50) && (going_dif < -10))
-    {
-        wheels.Left = -50;
-        wheels.Right = -50;
-        robo.setWheels(wheels);
-    }
-    else if ((going_dif >= -10) && (going_dif < 0))
-    {
-        wheels.Left = -15;
-        wheels.Right = -15;
-        robo.setWheels(wheels);
-    }
+    if (_rot > 45.0) _rot = 45.0;
+    else if (_rot < -45.0) _rot = -45.0;
 
+    if (_fwd > 75.0) _fwd = 75.0;
+    else if (_fwd < -75.0) _fwd = -75.0;
+
+    wheels.Left = 2 * _fwd - 5 * _rot;
+    wheels.Right = 2 * _fwd + 5 * _rot;
+    robo.setWheels(wheels);
 }
 
 
@@ -298,10 +187,11 @@ void route(EPuck::Robot& robo)
 {
     Position_t pos = robo.position();
     Wheels_t wheels = robo.wheels();
+    bool turn = false;
 
     //tolerance in tick
     int ah = 40;
-    int bh = 1;
+    int bh = 3;
     int ch = 30;
 
     path p2;
@@ -319,16 +209,17 @@ void route(EPuck::Robot& robo)
     double wheels_diff = pos.psi * 0.01 - psi_ref;
     wheels_diff -= round(wheels_diff / 360) * 360;
 
-    if ((wheels_diff > bh) || (wheels_diff < -bh))
+    if (abs(wheels_diff > bh))
     {
         turning(robo, wheels_diff);
+        turn = true;
     }
-
-    if ((go >= ah) && ((wheels_diff < bh) && (wheels_diff > -bh)))
+    else if ((go >= ah))
     {
-        going(robo, go);
+        going(robo, go, wheels_diff);
+        turn = false;
     }
-    else if (go < ch)
+    else
     {
         lock_guard<mutex> lock(mtx);
         if (pathq.size() > 1)
@@ -339,218 +230,6 @@ void route(EPuck::Robot& robo)
         else
             return;
     }
-    
-
-    
-    
-    //east
-    /*if (pos.x < p2.x - ch)
-    {
-        int psi_ref = 0;
-        int psi_err = pos.psi - psi_ref;
-        float wheels_diff = 0.01 * psi_err;
-        turning(robo, wheels_diff);
-
-        float go = p2.x - pos.x;
-
-        if ((go >= ah) && ((pos.psi == 0) || (pos.psi == 1)))
-        {
-            going(robo, go);
-        }
-        else if (go < bh)
-        {
-            lock_guard<mutex> lock(mtx);
-            if (pathq.size() > 1)
-            {
-                pathq.pop_front();
-                p2 = pathq.front();
-            }
-            else
-                return;
-        }
-    }
-    //west
-    if (pos.x > p2.x + ch)
-    {
-        int psi_ref = 18000;
-        int psi_err = pos.psi - psi_ref;
-        float wheels_diff = 0.01 * psi_err;
-        turning(robo, wheels_diff);
-
-        float go = pos.x - p2.x;
-       
-        if ((go >= ah) && (((pos.psi <= -17995) && (pos.psi >= -18000)) || ((pos.psi >= 17995) && (pos.psi <= 18000))))
-        {
-            going(robo, go);
-        }
-        else if (go < bh)
-        {
-            lock_guard<mutex> lock(mtx);
-            if (pathq.size() > 1)
-            {
-                pathq.pop_front();
-                p2 = pathq.front();
-            }
-            else
-                return;
-        }
-    }
-    //south
-    if (pos.y < p2.y - ch)
-    {
-        int psi_ref = 9000;
-        int psi_err = pos.psi - psi_ref;
-        float wheels_diff = 0.01 * psi_err;
-        turning(robo, wheels_diff);
-
-        float go = p2.y - pos.y;
-        
-        if ((go >= ah) && (pos.psi == 9000))
-        {
-            going(robo, go);
-        }
-        else if (go < bh)
-        {
-            lock_guard<mutex> lock(mtx);
-            if (pathq.size() > 1)
-            {
-                pathq.pop_front();
-                p2 = pathq.front();
-            }
-            else
-                return;
-        }
-    }
-    //north
-    if (pos.y > p2.y + ch)
-    {
-        int psi_ref = -9000;
-        int psi_err = pos.psi - psi_ref;
-        float wheels_diff = 0.01 * psi_err;
-        turning(robo, wheels_diff);
-
-        float go = pos.y - p2.y;
-        
-        if ((go >= ah) && (pos.psi == -9000))
-        {
-            going(robo, go);
-        }
-        else if (go < bh)
-        {
-            lock_guard<mutex> lock(mtx);
-            if (pathq.size() > 1)
-            {
-                pathq.pop_front();
-                p2 = pathq.front();
-            }
-            else
-                return;
-        }
-    }
-    //south-east
-    if ((pos.x < p2.x - ch) && (pos.y < p2.y - ch))
-    {
-        int psi_ref = 4500;
-        int psi_err = pos.psi - psi_ref;
-        float wheels_diff = 0.01 * psi_err;
-        turning(robo, wheels_diff);
-
-        float go = sqrt(pow((p2.x - pos.x),2)+pow((p2.y - pos.y),2));
-
-        if ((go >= ah) && (pos.psi == 4500))
-        {
-            going(robo, go);
-        }
-        else if (go < bh)
-        {
-            lock_guard<mutex> lock(mtx);
-            if (pathq.size() > 1)
-            {
-                pathq.pop_front();
-                p2 = pathq.front();
-            }
-            else
-                return;
-        }
-    }
-    //north-east
-    if ((pos.x < p2.x - ch) && (pos.y > p2.y + ch))
-    {
-        int psi_ref = -4500;
-        int psi_err = pos.psi - psi_ref;
-        float wheels_diff = 0.01 * psi_err;
-        turning(robo, wheels_diff);
-
-        float go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
-
-        if ((go >= ah) && (pos.psi == -4500))
-        {
-            going(robo, go);
-        }
-        else if (go < bh)
-        {
-            lock_guard<mutex> lock(mtx);
-            if (pathq.size() > 1)
-            {
-                pathq.pop_front();
-                p2 = pathq.front();
-            }
-            else
-                return;
-        }
-    }
-    //south-west
-    if ((pos.x > p2.x + ch) && (pos.y < p2.y - ch))
-    {
-        int psi_ref = 13500;
-        int psi_err = pos.psi - psi_ref;
-        float wheels_diff = 0.01 * psi_err;
-        turning(robo, wheels_diff);
-
-        float go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
-
-        if ((go >= ah) && (pos.psi == 13500))
-        {
-            going(robo, go);
-        }
-        else if (go < bh)
-        {
-            lock_guard<mutex> lock(mtx);
-            if (pathq.size() > 1)
-            {
-                pathq.pop_front();
-                p2 = pathq.front();
-            }
-            else
-                return;
-        }
-    }
-    //north-west
-    if ((pos.x > p2.x + ch) && (pos.y > p2.y + ch))
-    {
-        int psi_ref = -13500;
-        int psi_err = pos.psi - psi_ref;
-        float wheels_diff = 0.01 * psi_err;
-        turning(robo, wheels_diff);
-
-        float go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
-
-        if ((go >= ah) && (pos.psi == -13500))
-        {
-            going(robo, go);
-        }
-        else if (go < bh)
-        {
-            lock_guard<mutex> lock(mtx);
-            if (pathq.size() > 1)
-            {
-                pathq.pop_front();
-                p2 = pathq.front();
-            }
-            else
-                return;
-        }
-    }*/
 }
 
 
@@ -904,20 +583,6 @@ int main()
 
     thread drawingmap(runSimulation, ref(robo), 8);
     
-    
-    /*while (robo.simulationEnabled())
-    {
-        cout << "\n" << "Set left wheel" << endl;
-        cin >> set.Left;
-        cout << "Set right wheel" << endl;
-        cin >> set.Right;
-        robo.setWheels(set);
-        //disable simulation
-        if (set.Left == 1)
-        {
-            robo.disableSimulation();
-        }
-    }*/
     astar.join();
     drawingmap.join();   
     

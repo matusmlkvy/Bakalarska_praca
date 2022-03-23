@@ -75,7 +75,7 @@ void AStar::Generator::clearCollisions()
     walls.clear();
 }
 
-AStar::CoordinateList AStar::Generator::findPath(Vec2i source_, Vec2i target_, int dir_) //zadeklarovat
+AStar::CoordinateList AStar::Generator::findPath(Vec2i source_, Vec2i target_, int dir_) 
 {
     Node* current = nullptr;
     NodeSet openSet, closedSet;
@@ -118,7 +118,7 @@ AStar::CoordinateList AStar::Generator::findPath(Vec2i source_, Vec2i target_, i
             
             int dirDiff = newDir - current->dir;
             dirDiff -= (int)(round((double)dirDiff / 360.0) * 360.0);
-            uint totalCost = current->G + ((i < 4) ? 10 : 14) + abs(dirDiff)/*(newDir != current->dir ? 80 : 0)*/;
+            uint totalCost = current->G + ((i < 4) ? 10 : 14) + abs(dirDiff);
 
             Node* successor = findNodeOnList(openSet, newCoordinates);
             if (successor == nullptr)
