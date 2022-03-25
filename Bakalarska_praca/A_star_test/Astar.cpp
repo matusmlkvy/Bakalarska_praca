@@ -63,6 +63,7 @@ void AStar::Generator::addCollision(Vec2i coordinates_)
 
 void AStar::Generator::removeCollision(Vec2i coordinates_)
 {
+    std::lock_guard<std::mutex> locker(lock_walls);
     auto it = std::find(walls.begin(), walls.end(), coordinates_);
     if (it != walls.end())
     {
@@ -102,6 +103,8 @@ AStar::CoordinateList AStar::Generator::findPath(Vec2i source_, Vec2i target_, i
         {
             break;
         }
+
+        //zadefinovat niekam prerusenie po to com sa nedokayem dostat do ciela, opytat sa 
 
         closedSet.push_back(current);
         openSet.erase(current_it);
