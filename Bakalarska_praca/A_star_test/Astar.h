@@ -49,7 +49,7 @@ namespace AStar
 
     public:
         Generator();
-        bool detectCollision(Vec2i coordinates_);
+        int detectCollision(Vec2i coordinates_);
         void setWorldSize(Vec2i worldSize_);
         void setDiagonalMovement(bool enable_);
         void setHeuristic(HeuristicFunction heuristic_);

@@ -36,7 +36,7 @@ AStar::Generator::Generator()
         { -1, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 }
     };
     //zadefinovat uhly pomocou 45,90 ....
-    directionAngles = {-90, 0, 90, -180, 135, -45, -135, 45};
+    directionAngles = {90, 0, -90, -180, -135, 45, 135, -45};
 }
 
 void AStar::Generator::setWorldSize(Vec2i worldSize_)
@@ -104,24 +104,31 @@ AStar::CoordinateList AStar::Generator::findPath(Vec2i source_, Vec2i target_, i
             break;
         }
 
-        //zadefinovat niekam prerusenie po to com sa nedokayem dostat do ciela, opytat sa 
+
+        //zadefinovat niekam prerusenie po to com sa nedokazem dostat do ciela, opytat sa 
 
         closedSet.push_back(current);
         openSet.erase(current_it);
+
+        if (closedSet.size() > 10000)
+        {
+            current = new Node(source_, nullptr, dir_);
+            break;
+        }
 
         for (uint i = 0; i < directions; ++i)
         {
             Vec2i newCoordinates(current->coordinates + direction[i]);
             int newDir = directionAngles[i];
-            if (detectCollision(newCoordinates) ||
-                findNodeOnList(closedSet, newCoordinates))
+            int danger = detectCollision(newCoordinates);
+            if (findNodeOnList(closedSet, newCoordinates) || danger > 400)
             {
                 continue;
             }
             
             int dirDiff = newDir - current->dir;
             dirDiff -= (int)(round((double)dirDiff / 360.0) * 360.0);
-            uint totalCost = current->G + ((i < 4) ? 10 : 14) + abs(dirDiff);
+            uint totalCost = current->G + ((i < 4) ? 10 : 14) + abs(dirDiff) + danger;
 
             Node* successor = findNodeOnList(openSet, newCoordinates);
             if (successor == nullptr)
@@ -174,23 +181,36 @@ void AStar::Generator::releaseNodes(NodeSet& nodes_)
     }
 }
 
-bool AStar::Generator::detectCollision(Vec2i coordinates_)
+int AStar::Generator::detectCollision(Vec2i coordinates_)
 {
     std::lock_guard<std::mutex> locker(lock_walls);
+    int dmin = 10000;
     int xc = coordinates_.x;
     int yc = coordinates_.y;
     for (int i = 0; i < walls.size(); i++)
     {
         int xw = walls[i].x;
         int yw = walls[i].y;
-        if (coordinates_.x < 0 || coordinates_.x >= worldSize.x ||
-            coordinates_.y < 0 || coordinates_.y >= worldSize.y || 
-            abs(xw - xc) < 4 && abs(yw - yc) < 4)
+        int dx = xw - xc;
+        int dy = yw - yc;
+        int d = dx * dx + dy * dy;
+        if (d < dmin)
         {
-            return true;
+            dmin = d;
         }
     }
-    return false;
+    if (dmin == 0)
+    {
+        return 10000;
+    }
+    else if (dmin < 40)
+    {
+        return 1000 / dmin;
+    }
+    else
+    {
+        return 0;
+    }
     /*if (coordinates_.x < 0 || coordinates_.x >= worldSize.x ||
         coordinates_.y < 0 || coordinates_.y >= worldSize.y ||
         std::find(walls.begin(), walls.end(), coordinates_) != walls.end())

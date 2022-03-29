@@ -35,14 +35,9 @@ struct obstacle
     double x = 0;
     double y = 0;
 };
-struct start
-{
-    int x = 560;
-    int y = 3200;
-};
 struct destination
 {
-    int x = 6000;
+    int x = 8000;
     int y = 4000;
 };
 struct path
@@ -51,7 +46,6 @@ struct path
     double y;
 };
 deque<path> pathq;
-start src;
 AStar::Generator generator;
 destination dest;
 
@@ -98,7 +92,7 @@ void generatepath(EPuck::Robot& robo, int _pixels)
     generator.setDiagonalMovement(true);
 
     
-    while (/*robo.simulationEnabled()*/true)
+    while (true)
     {
         Wheels_t wheels = robo.wheels();
         Position_t pos = robo.position();
@@ -108,7 +102,9 @@ void generatepath(EPuck::Robot& robo, int _pixels)
         int destx = (int)std::round((double)dest.x * 1.0 / TICKS_PER_PIXEL / pixels);
         int desty = (int)std::round((double)dest.y * 1.0 / TICKS_PER_PIXEL / pixels);
 
-        if ((posx)!= (destx) || (posy) != (desty))
+        
+
+        if ((posx) != (destx) || (posy) != (desty)) //alebo to dodaù sem
         {
             std::cout << "Generate path ... \n";
             // This method returns vector of coordinates from target to source.
@@ -129,9 +125,24 @@ void generatepath(EPuck::Robot& robo, int _pixels)
                 pathq.pop_front();
             }
         }
-        else
+
+        
         {
             lock_guard<mutex> lock(mtx);
+            bool noPath = false;
+            if (pathq.size() <= 1)
+            {
+                // nowhere to go
+                noPath = true;
+            }
+            else
+            {
+                auto endPt = pathq.back();
+                if (endPt.x == 0 && endPt.y == 0)
+                    noPath = true;
+            }
+
+            if (noPath)
             {
                 wheels.Left = 0;
                 wheels.Right = 0;
@@ -140,11 +151,7 @@ void generatepath(EPuck::Robot& robo, int _pixels)
                 dest.x = x * 80;
                 int y = rand() % 77 + 1;
                 dest.y = y * 80;
-                cout << dest.x <<"      "<< dest.y;
-                /*cout << "Zadajte cielove suradnice pre x:" << endl;
-                cin >> dest.x;
-                cout << "Zadajte cielove suradnice pre y:" << endl;
-                cin >> dest.y;*/
+                cout << dest.x << "      " << dest.y;
             }
         }
     }
@@ -173,15 +180,15 @@ void going(EPuck::Robot& robo, float _fwd, float _rot=0)
     if (_rot > 45.0) _rot = 45.0;
     else if (_rot < -45.0) _rot = -45.0;
 
-    if (_fwd > 75.0) _fwd = 75.0;
-    else if (_fwd < -75.0) _fwd = -75.0;
+    if (_fwd > 50.0) _fwd = 50.0;
+    else if (_fwd < -50.0) _fwd = -50.0;
 
     wheels.Left = 2 * _fwd - 5 * _rot;
     wheels.Right = 2 * _fwd + 5 * _rot;
     robo.setWheels(wheels);
 }
 
-
+bool turn = false;
 
 void route(EPuck::Robot& robo)
 {
@@ -189,10 +196,8 @@ void route(EPuck::Robot& robo)
     Wheels_t wheels = robo.wheels();
 
     //tolerance in tick
-    int ah = 40;
-    int bh = 4;
-    int ch = 30;
-    bool turn = false;
+    int distance_tolerance = 40;        //premenovat rozumne
+    int angle_tolerance = 10;
 
     path p2;
     {
@@ -209,12 +214,12 @@ void route(EPuck::Robot& robo)
     double wheels_diff = pos.psi * 0.01 - psi_ref;
     wheels_diff -= round(wheels_diff / 360) * 360;
 
-    if (abs(wheels_diff > bh))
+    if (abs(wheels_diff) > angle_tolerance)
     {
         turning(robo, wheels_diff);
         turn = true;
     }
-    else if (abs(wheels_diff > 1) && abs(wheels_diff < bh) && turn == true)
+    else if (abs(wheels_diff) > 1 && abs(wheels_diff) <= angle_tolerance && turn == true)
     {
         turning(robo, wheels_diff);
         if (abs(wheels_diff) < 2)
@@ -222,7 +227,7 @@ void route(EPuck::Robot& robo)
             turn = false;
         }
     }
-    else if ((go >= ah))
+    else if ((go >= distance_tolerance))
     {
         going(robo, go, wheels_diff);
     }
@@ -290,7 +295,6 @@ void drawmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot&
         }
     }
     //draw destination point
-    //destination dest;
     circle(map, Point(dest.x / TICKS_PER_PIXEL, dest.y / TICKS_PER_PIXEL), 10, Scalar(255, 0, 255), FILLED);
 
 
@@ -312,6 +316,7 @@ template <size_t ROW, size_t COL>
 void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& robo)
 {
     int pixels = _pixels;
+    int proximity_for_detection = 60;
     //robots coordinates
     Position_t pos = robo.position();
     //robots radius
@@ -324,9 +329,9 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
     float degree = (float)pos.psi * 0.01 * M_PI / 180.0;
 
     obstacle point;
-  
+
     Mat imagegen = Mat::zeros(ROW * pixels, COL * pixels, CV_8UC3);
-    if (prox.L_150deg > 0)
+    if (prox.L_150deg > proximity_for_detection)
     {
         float d = 15000.0 / (float)prox.L_150deg + radius * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree - (150 / 180.0) * M_PI));
@@ -337,7 +342,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
             (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         
     }
-    if (prox.L_20deg > 0)
+    if (prox.L_20deg > proximity_for_detection)
     {
         float d = 15000.0 / (float)prox.L_20deg + radius * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree - (20 / 180.0) * M_PI));
@@ -348,7 +353,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
             (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         
     }
-    if (prox.L_50deg > 0)
+    if (prox.L_50deg > proximity_for_detection)
     {
         float d = 15000.0 / (float)prox.L_50deg + radius * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree - (50 / 180.0) * M_PI));
@@ -359,7 +364,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
             (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         
     }
-    if (prox.L_90deg > 0)
+    if (prox.L_90deg > proximity_for_detection)
     {
         float d = 15000.0 / (float)prox.L_90deg + radius * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree - (90 / 180.0) * M_PI));
@@ -370,7 +375,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
             (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         
     }
-    if (prox.R_150deg > 0)
+    if (prox.R_150deg > proximity_for_detection)
     {
         float d = 15000.0 / (float)prox.R_150deg + radius * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree + (150 / 180.0) * M_PI));
@@ -381,7 +386,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
             (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         
     }
-    if (prox.R_20deg > 0)
+    if (prox.R_20deg > proximity_for_detection)
     {
         float d = 15000.0 / (float)prox.R_20deg + radius * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree + (20 / 180.0) * M_PI));
@@ -391,9 +396,8 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
             (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
         
-        
     }
-    if (prox.R_50deg > 0)
+    if (prox.R_50deg > proximity_for_detection)
     {
         float d = 15000.0 / (float)prox.R_50deg + radius * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree + (50 / 180.0) * M_PI));
@@ -402,10 +406,9 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         vpoint.push_back(point);
         generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
             (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
-       
-             
+           
     }
-    if (prox.R_90deg > 0)
+    if (prox.R_90deg > proximity_for_detection)
     {
         float d = 15000.0 / (float)prox.R_90deg + radius * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree + (90 / 180.0) * M_PI));
@@ -435,7 +438,6 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         }
     }
     //draw destination point
-    //destination dest;
     circle(imagegen, Point(dest.x / TICKS_PER_PIXEL, dest.y / TICKS_PER_PIXEL), 10, Scalar(255, 0, 255), FILLED);
 
     // robot
@@ -545,15 +547,15 @@ void runSimulation(EPuck::Robot& robo, int _pixels)
     Position_t pos = robo.position();
     Wheels_t wheels = robo.wheels();
 
-    /*while (robo.simulationEnabled())
+    while (robo.simulationEnabled())
     {  
         drawmap(trueGrid, pixels, robo);
         estmap(trueGrid, pixels, robo);
         route(robo);
-    }*/
+    }
     while (true)
     {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
         estmap(trueGrid, pixels, robo);
         route(robo);
     }
@@ -584,8 +586,6 @@ int main()
     robo.setPosition(setpos);
 
     thread astar(generatepath, ref(robo), 8);
-    //cout << "Zadajte velkost mriezky na zaciatku druheho generovania mapy: " << endl;
-    //cin >> pixels;
     
     /* Description of the Grid-
     1--> The cell is not blocked
