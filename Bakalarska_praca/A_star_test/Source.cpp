@@ -15,7 +15,6 @@
 #include <thread>
 #include <stdlib.h>
 #include <time.h>
-//#include <mutex>
 
 #include <OccupancyGrid.h>
 #include <defs.h>
@@ -37,7 +36,7 @@ struct obstacle
 };
 struct destination
 {
-    int x = 8000;
+    int x = 6000;
     int y = 4000;
 };
 struct path
@@ -47,7 +46,6 @@ struct path
 };
 deque<path> pathq;
 AStar::Generator generator;
-destination dest;
 
 mutex mtx;
 
@@ -79,7 +77,7 @@ bool isUnBlocked(const array<array<int, COL>, ROW>& grid, const Pair& point)
 
 
 vector<path> help;
-void generatepath(EPuck::Robot& robo, int _pixels)
+void generatepath(EPuck::Robot& robo, destination _dest,int _pixels)
 {
     int pixels = _pixels;
     srand(time(NULL));
@@ -99,12 +97,12 @@ void generatepath(EPuck::Robot& robo, int _pixels)
         
         int posx = (int)std::round((double)pos.x * 1.0 / TICKS_PER_PIXEL / pixels);
         int posy = (int)std::round((double)pos.y * 1.0 / TICKS_PER_PIXEL / pixels);
-        int destx = (int)std::round((double)dest.x * 1.0 / TICKS_PER_PIXEL / pixels);
-        int desty = (int)std::round((double)dest.y * 1.0 / TICKS_PER_PIXEL / pixels);
+        int destx = (int)std::round((double)_dest.x * 1.0 / TICKS_PER_PIXEL / pixels);
+        int desty = (int)std::round((double)_dest.y * 1.0 / TICKS_PER_PIXEL / pixels);
 
         
 
-        if ((posx) != (destx) || (posy) != (desty)) //alebo to dodaù sem
+        if ((posx) != (destx) || (posy) != (desty)) 
         {
             std::cout << "Generate path ... \n";
             // This method returns vector of coordinates from target to source.
@@ -148,10 +146,10 @@ void generatepath(EPuck::Robot& robo, int _pixels)
                 wheels.Right = 0;
                 robo.setWheels(wheels);
                 int x = rand() % 170 + 1;
-                dest.x = x * 80;
+                _dest.x = x * 80;
                 int y = rand() % 77 + 1;
-                dest.y = y * 80;
-                cout << dest.x << "      " << dest.y;
+                _dest.y = y * 80;
+                cout << _dest.x << "      " << _dest.y;
             }
         }
     }
@@ -294,9 +292,7 @@ void drawmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot&
             rectangle(map, Point(x, y + 2), Point(x + 2, y), Scalar(0, 255, 0), FILLED);
         }
     }
-    //draw destination point
-    circle(map, Point(dest.x / TICKS_PER_PIXEL, dest.y / TICKS_PER_PIXEL), 10, Scalar(255, 0, 255), FILLED);
-
+    
 
     //robot
     circle(map, Point(pos.x / TICKS_PER_PIXEL, pos.y / TICKS_PER_PIXEL), R, Scalar(255, 0, 0), FILLED);
@@ -437,9 +433,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
             rectangle(imagegen, Point(x, y + 2), Point(x + 2, y), Scalar(0, 0, 255), FILLED);
         }
     }
-    //draw destination point
-    circle(imagegen, Point(dest.x / TICKS_PER_PIXEL, dest.y / TICKS_PER_PIXEL), 10, Scalar(255, 0, 255), FILLED);
-
+    
     // robot
     circle(imagegen, Point(pos.x / TICKS_PER_PIXEL, pos.y / TICKS_PER_PIXEL), R, Scalar(255, 0, 0), FILLED);  
 
@@ -553,12 +547,12 @@ void runSimulation(EPuck::Robot& robo, int _pixels)
         estmap(trueGrid, pixels, robo);
         route(robo);
     }
-    while (true)
+    /*while (true)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
         estmap(trueGrid, pixels, robo);
         route(robo);
-    }
+    }*/
     
 }
 
@@ -569,12 +563,15 @@ int main()
     
     //create object robot
     Robot robo;
+    Robot robo2;
     //enable simulation
-    //robo.enableSimulation();
+    robo.enableSimulation();
+    
+    robo2.enableSimulation();
 
     //enable real robot
-    robo.open("COM3");
-    robo.enableSensors();
+    //robo.open("COM3");
+    //robo.enableSensors();
 
     // wheels structure
     Wheels_t set;
@@ -584,8 +581,16 @@ int main()
     setpos.x = 560;
     setpos.y = 3200;
     robo.setPosition(setpos);
+    
+    Position_t setpos2;
+    setpos2.psi = 0;
+    setpos2.x = 6000;
+    setpos2.y = 8000;
+    robo2.setPosition(setpos2);
 
-    thread astar(generatepath, ref(robo), 8);
+    destination dest;
+
+    thread astar(generatepath, ref(robo), ref(dest), 8);
     
     /* Description of the Grid-
     1--> The cell is not blocked
