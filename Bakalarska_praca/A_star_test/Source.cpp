@@ -36,7 +36,7 @@ struct obstacle
 };
 struct destination
 {
-    int x = 6000;
+    int x = 8000;
     int y = 4000;
 };
 struct path
@@ -44,7 +44,7 @@ struct path
     double x;
     double y;
 };
-deque<path> pathq;
+//deque<path> pathq;
 AStar::Generator generator;
 
 mutex mtx;
@@ -81,6 +81,8 @@ void generatepath(EPuck::Robot& robo, destination _dest,int _pixels)
 {
     int pixels = _pixels;
     srand(time(NULL));
+
+    deque<path> pathq;
     
 
     // Set 2d map size.
@@ -121,10 +123,11 @@ void generatepath(EPuck::Robot& robo, destination _dest,int _pixels)
                     pathq.push_front(p1);
                 }
                 pathq.pop_front();
+
+                //route by sa vytvaralo tu v A* a posielal by sa tam kontajner
             }
         }
 
-        
         {
             lock_guard<mutex> lock(mtx);
             bool noPath = false;
@@ -152,6 +155,8 @@ void generatepath(EPuck::Robot& robo, destination _dest,int _pixels)
                 cout << _dest.x << "      " << _dest.y;
             }
         }
+
+        route(robo, pathq);
     }
 }
 
@@ -188,7 +193,7 @@ void going(EPuck::Robot& robo, float _fwd, float _rot=0)
 
 bool turn = false;
 
-void route(EPuck::Robot& robo)
+void route(EPuck::Robot& robo, deque<path> pathq)
 {
     Position_t pos = robo.position();
     Wheels_t wheels = robo.wheels();
@@ -332,10 +337,33 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         float d = 15000.0 / (float)prox.L_150deg + radius * TICKS_PER_METER;
         point.x = (pos.x + d * cos(degree - (150 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree - (150 / 180.0) * M_PI));
+
         
-        vpoint.push_back(point);
+            //navrh nadetekovanie ci je to robot alebo je to prekazka 
+        bool robot_in_way = false;
+        int xp = point.x;
+        int yp = point.y;
+        
+        int xw = pos.x;
+        int yw = pos.y;
+
+        if (abs(xw - xp) < 4 && abs(yw - yp) < 4)
+        {
+            robot_in_way = true;
+        }
+        
+
+        if(robot_in_way == false)
+        {
+            vpoint.push_back(point);
+            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+        }
+        
+        
+        /*vpoint.push_back(point);
         generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-            (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });*/
         
     }
     if (prox.L_20deg > proximity_for_detection)
@@ -344,9 +372,31 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         point.x = (pos.x + d * cos(degree - (20 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree - (20 / 180.0) * M_PI));
         
-        vpoint.push_back(point);
+        //navrh nadetekovanie ci je to robot alebo je to prekazka 
+        bool robot_in_way = false;
+        int xp = point.x;
+        int yp = point.y;
+
+        int xw = pos.x;
+        int yw = pos.y;
+
+        if (abs(xw - xp) < 4 && abs(yw - yp) < 4)
+        {
+            robot_in_way = true;
+        }
+
+
+        if (robot_in_way == false)
+        {
+            vpoint.push_back(point);
+            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+        }
+
+
+        /*vpoint.push_back(point);
         generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-            (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });*/
         
     }
     if (prox.L_50deg > proximity_for_detection)
@@ -355,9 +405,31 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         point.x = (pos.x + d * cos(degree - (50 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree - (50 / 180.0) * M_PI));
         
-        vpoint.push_back(point);
+        //navrh nadetekovanie ci je to robot alebo je to prekazka 
+        bool robot_in_way = false;
+        int xp = point.x;
+        int yp = point.y;
+
+        int xw = pos.x;
+        int yw = pos.y;
+
+        if (abs(xw - xp) < 4 && abs(yw - yp) < 4)
+        {
+            robot_in_way = true;
+        }
+
+
+        if (robot_in_way == false)
+        {
+            vpoint.push_back(point);
+            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+        }
+
+
+        /*vpoint.push_back(point);
         generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-            (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });*/
         
     }
     if (prox.L_90deg > proximity_for_detection)
@@ -366,9 +438,31 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         point.x = (pos.x + d * cos(degree - (90 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree - (90 / 180.0) * M_PI));
         
-        vpoint.push_back(point);
+        //navrh nadetekovanie ci je to robot alebo je to prekazka 
+        bool robot_in_way = false;
+        int xp = point.x;
+        int yp = point.y;
+
+        int xw = pos.x;
+        int yw = pos.y;
+
+        if (abs(xw - xp) < 4 && abs(yw - yp) < 4)
+        {
+            robot_in_way = true;
+        }
+
+
+        if (robot_in_way == false)
+        {
+            vpoint.push_back(point);
+            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+        }
+
+
+        /*vpoint.push_back(point);
         generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-            (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });*/
         
     }
     if (prox.R_150deg > proximity_for_detection)
@@ -377,9 +471,31 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         point.x = (pos.x + d * cos(degree + (150 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree + (150 / 180.0) * M_PI));
         
-        vpoint.push_back(point);
+        //navrh nadetekovanie ci je to robot alebo je to prekazka 
+        bool robot_in_way = false;
+        int xp = point.x;
+        int yp = point.y;
+
+        int xw = pos.x;
+        int yw = pos.y;
+
+        if (abs(xw - xp) < 4 && abs(yw - yp) < 4)
+        {
+            robot_in_way = true;
+        }
+
+
+        if (robot_in_way == false)
+        {
+            vpoint.push_back(point);
+            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+        }
+
+
+        /*vpoint.push_back(point);
         generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-            (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });*/
         
     }
     if (prox.R_20deg > proximity_for_detection)
@@ -388,9 +504,31 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         point.x = (pos.x + d * cos(degree + (20 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree + (20 / 180.0) * M_PI));
         
-        vpoint.push_back(point);
+        //navrh nadetekovanie ci je to robot alebo je to prekazka 
+        bool robot_in_way = false;
+        int xp = point.x;
+        int yp = point.y;
+
+        int xw = pos.x;
+        int yw = pos.y;
+
+        if (abs(xw - xp) < 4 && abs(yw - yp) < 4)
+        {
+            robot_in_way = true;
+        }
+
+
+        if (robot_in_way == false)
+        {
+            vpoint.push_back(point);
+            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+        }
+
+
+        /*vpoint.push_back(point);
         generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-            (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });*/
         
     }
     if (prox.R_50deg > proximity_for_detection)
@@ -399,9 +537,31 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         point.x = (pos.x + d * cos(degree + (50 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree + (50 / 180.0) * M_PI));
         
-        vpoint.push_back(point);
+        //navrh nadetekovanie ci je to robot alebo je to prekazka 
+        bool robot_in_way = false;
+        int xp = point.x;
+        int yp = point.y;
+
+        int xw = pos.x;
+        int yw = pos.y;
+
+        if (abs(xw - xp) < 4 && abs(yw - yp) < 4)
+        {
+            robot_in_way = true;
+        }
+
+
+        if (robot_in_way == false)
+        {
+            vpoint.push_back(point);
+            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+        }
+
+
+        /*vpoint.push_back(point);
         generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-            (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });*/
            
     }
     if (prox.R_90deg > proximity_for_detection)
@@ -410,9 +570,31 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, EPuck::Robot& 
         point.x = (pos.x + d * cos(degree + (90 / 180.0) * M_PI));
         point.y = (pos.y + d * sin(degree + (90 / 180.0) * M_PI));
         
-        vpoint.push_back(point);
+        //navrh nadetekovanie ci je to robot alebo je to prekazka 
+        bool robot_in_way = false;
+        int xp = point.x;
+        int yp = point.y;
+
+        int xw = pos.x;
+        int yw = pos.y;
+
+        if (abs(xw - xp) < 4 && abs(yw - yp) < 4)
+        {
+            robot_in_way = true;
+        }
+
+
+        if (robot_in_way == false)
+        {
+            vpoint.push_back(point);
+            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+        }
+
+
+        /*vpoint.push_back(point);
         generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-            (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+            (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });*/
         
     }
     
@@ -545,7 +727,7 @@ void runSimulation(EPuck::Robot& robo, int _pixels)
     {  
         drawmap(trueGrid, pixels, robo);
         estmap(trueGrid, pixels, robo);
-        route(robo);
+        //route(robo);
     }
     /*while (true)
     {
@@ -559,15 +741,25 @@ void runSimulation(EPuck::Robot& robo, int _pixels)
 // Driver program to test above function
 int main()
 {
+
+    /* Description of the Grid-
+    1--> The cell is not blocked
+    0--> The cell is blocked */
+
     int pixels;
     
     //create object robot
     Robot robo;
     Robot robo2;
+
+    //vytvorit vector objektov a ten posielat cez vlakno !!!!!! opytat sa na to lebo neviem cez co by som dal dalsieho robota
+    
     //enable simulation
     robo.enableSimulation();
     
     robo2.enableSimulation();
+
+    //vector<Robot> vector_of_robots;
 
     //enable real robot
     //robo.open("COM3");
@@ -588,19 +780,28 @@ int main()
     setpos2.y = 8000;
     robo2.setPosition(setpos2);
 
+    //vector_of_robots.push_back(robo);
+    //vector_of_robots.push_back(robo2);
+
+
     destination dest;
+
+    /*for (int i = 0; i < vector_of_robots.size(); i++)
+    {
+        thread astar(generatepath, ref(vector_of_robots[i]), ref(dest), 8);
+
+        thread drawingmap(runSimulation, ref(vector_of_robots[i]), 8);
+
+        astar.join();
+        drawingmap.join();
+    }*/
 
     thread astar(generatepath, ref(robo), ref(dest), 8);
     
-    /* Description of the Grid-
-    1--> The cell is not blocked
-    0--> The cell is blocked */
-    
-
     thread drawingmap(runSimulation, ref(robo), 8);
     
     astar.join();
-    drawingmap.join();   
+    drawingmap.join();  
     
    
     return 0;
