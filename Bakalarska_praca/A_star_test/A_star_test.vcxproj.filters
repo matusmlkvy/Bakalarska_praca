@@ -21,9 +21,15 @@
     <ClCompile Include="Astar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MyRobot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Astar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MyRobot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

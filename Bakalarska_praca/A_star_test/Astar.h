@@ -42,7 +42,6 @@ namespace AStar
 
     class Generator
     {
-        //bool detectCollision(Vec2i coordinates_);
         Node* findNodeOnList(NodeSet& nodes_, Vec2i coordinates_);
         void releaseNodes(NodeSet& nodes_);
         std::mutex lock_walls;

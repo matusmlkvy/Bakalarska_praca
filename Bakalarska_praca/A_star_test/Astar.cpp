@@ -71,6 +71,9 @@ void AStar::Generator::removeCollision(Vec2i coordinates_)
     }
 }
 
+//dorobit moving obstacles nieco podobne ako walls len s premenlivymi prekazkami a ked najde cestu premaze
+
+
 void AStar::Generator::clearCollisions()
 {
     walls.clear();
