@@ -28,19 +28,26 @@ struct path
 	double y;
 };
 
-class MyRobot
+class MyRobot : public Robot
 {
-	mutex locking;
+	mutable mutex locking;
+	thread th;
+	volatile bool is_enabled;
+	destination dest;
+
 public:
 	MyRobot();
-	~MyRobot();
-	Robot robo;
+	~MyRobot();	
 	AStar::Generator generator;
 	deque<path> pathq;
-	void turning(EPuck::Robot& robo, float angleErr);
-	void going(EPuck::Robot& robo, float _fwd, float _rot = 0);
-	void route(EPuck::Robot& robo, deque<path> _pathq);
-	void generatepath(EPuck::Robot& robo, destination _dest, int _pixels);
+	
+	void setDestination(const destination& _dst);
+	destination getDestination() const;
+
+	void turning(float angleErr);
+	void going(float _fwd, float _rot = 0);
+	void route();
+	static void generatepath(MyRobot& obj, int _pixels);
 	
 };
 

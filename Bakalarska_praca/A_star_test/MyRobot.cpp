@@ -1,23 +1,37 @@
 #include "MyRobot.h"
 
-
-void MyRobot::turning(EPuck::Robot& robo, float angleErr)
+MyRobot::MyRobot() : 
+    Robot(),
+    is_enabled(true),
+    th(generatepath, ref(*this), 8)
 {
-    Wheels_t wheels = robo.wheels();
+    destination dest;
+}
+
+MyRobot::~MyRobot()
+{
+    is_enabled = false;
+    th.join();
+}
+
+
+void MyRobot::turning(float angleErr)
+{
+    Wheels_t wh = wheels();
 
     angleErr -= 360.0 * round(angleErr / 360.0);
 
     if (angleErr > 30.0) angleErr = 30.0;
     else if (angleErr < -30.0) angleErr = -30.0;
 
-    wheels.Left = -2 * angleErr;
-    wheels.Right = 2 * angleErr;
-    robo.setWheels(wheels);
+    wh.Left = -2 * angleErr;
+    wh.Right = 2 * angleErr;
+    setWheels(wh);
 }
 
-void MyRobot::going(EPuck::Robot& robo, float _fwd, float _rot)
+void MyRobot::going(float _fwd, float _rot)
 {
-    Wheels_t wheels = robo.wheels();
+    Wheels_t wh = wheels();
 
     _rot -= 360.0 * round(_rot / 360.0);
 
@@ -27,17 +41,17 @@ void MyRobot::going(EPuck::Robot& robo, float _fwd, float _rot)
     if (_fwd > 50.0) _fwd = 50.0;
     else if (_fwd < -50.0) _fwd = -50.0;
 
-    wheels.Left = 2 * _fwd - 5 * _rot;
-    wheels.Right = 2 * _fwd + 5 * _rot;
-    robo.setWheels(wheels);
+    wh.Left = 2 * _fwd - 5 * _rot;
+    wh.Right = 2 * _fwd + 5 * _rot;
+    setWheels(wh);
 }
 
 bool turn = false;
 
-void MyRobot::route(EPuck::Robot & robo, deque<path> _pathq)
+void MyRobot::route()
 {
-    Position_t pos = robo.position();
-    Wheels_t wheels = robo.wheels();
+    Position_t pos = position();
+    Wheels_t wh = wheels();
 
     //tolerance in tick
     int distance_tolerance = 40;
@@ -46,8 +60,8 @@ void MyRobot::route(EPuck::Robot & robo, deque<path> _pathq)
     path p2;
     {
         lock_guard<mutex> lock(locking);
-        if (_pathq.size() > 0)
-            p2 = _pathq.front();
+        if (pathq.size() > 0)
+            p2 = pathq.front();
         else
             return;
     }
@@ -60,12 +74,12 @@ void MyRobot::route(EPuck::Robot & robo, deque<path> _pathq)
 
     if (abs(wheels_diff) > angle_tolerance)
     {
-        turning(robo, wheels_diff);
+        turning(wheels_diff);
         turn = true;
     }
     else if (abs(wheels_diff) > 1 && abs(wheels_diff) <= angle_tolerance && turn == true)
     {
-        turning(robo, wheels_diff);
+        turning(wheels_diff);
         if (abs(wheels_diff) < 2)
         {
             turn = false;
@@ -73,101 +87,115 @@ void MyRobot::route(EPuck::Robot & robo, deque<path> _pathq)
     }
     else if ((go >= distance_tolerance))
     {
-        going(robo, go, wheels_diff);
+        going(go, wheels_diff);
     }
     else
     {
         lock_guard<mutex> lock(locking);
-        if (_pathq.size() > 1)
+        if (pathq.size() > 1)
         {
-            _pathq.pop_front();
-            p2 = _pathq.front();
+            pathq.pop_front();
+            p2 = pathq.front();
         }
         else
             return;
     }
 }
 
+destination MyRobot::getDestination() const
+{
+    lock_guard<mutex> lock(locking);
+    return dest;
+}
 
-vector<path> help;
-void MyRobot::generatepath(EPuck::Robot& robo, destination _dest, int _pixels)
+void MyRobot::setDestination(const destination& _dest)
+{
+    lock_guard<mutex> lock(locking);
+     dest = _dest;
+}
+
+
+void MyRobot::generatepath(MyRobot& obj, int _pixels)
 {
     int pixels = _pixels;
     srand(time(NULL));
 
-    deque<path> pathq;
-
     
     // Set 2d map size.
-    generator.setWorldSize({ 172, 79 });
+    obj.generator.setWorldSize({ 172, 79 });
     // You can use a few heuristics : manhattan, euclidean or octagonal.
-    generator.setHeuristic(AStar::Heuristic::euclidean);
-    generator.setDiagonalMovement(true);
+    obj.generator.setHeuristic(AStar::Heuristic::euclidean);
+    obj.generator.setDiagonalMovement(true);
 
 
-    while (true)
+    while (obj.is_enabled)
     {
-        Wheels_t wheels = robo.wheels();
-        Position_t pos = robo.position();
-
-        int posx = (int)std::round((double)pos.x * 1.0 / TICKS_PER_PIXEL / pixels);
-        int posy = (int)std::round((double)pos.y * 1.0 / TICKS_PER_PIXEL / pixels);
-        int destx = (int)std::round((double)_dest.x * 1.0 / TICKS_PER_PIXEL / pixels);
-        int desty = (int)std::round((double)_dest.y * 1.0 / TICKS_PER_PIXEL / pixels);
-
-
-
-        if ((posx) != (destx) || (posy) != (desty))
+        if (obj.isOpen() || obj.simulationEnabled())
         {
-            std::cout << "Generate path ... \n";
-            // This method returns vector of coordinates from target to source.
-            auto pth = generator.findPath({ posx, posy }, { destx, desty }, (pos.psi / 100));
+            Wheels_t wheels = obj.wheels();
+            Position_t pos = obj.position();
 
-            path p1;
+            destination _dest = obj.getDestination();
+
+            int posx = (int)std::round((double)pos.x * 1.0 / TICKS_PER_PIXEL / pixels);
+            int posy = (int)std::round((double)pos.y * 1.0 / TICKS_PER_PIXEL / pixels);
+            int destx = (int)std::round((double)_dest.x * 1.0 / TICKS_PER_PIXEL / pixels);
+            int desty = (int)std::round((double)_dest.y * 1.0 / TICKS_PER_PIXEL / pixels);
+
+
+
+            if ((posx) != (destx) || (posy) != (desty))
             {
-                lock_guard<mutex> lock(locking);
-                help.clear();
-                pathq.clear();
-                for (auto& coordinate : pth)
+                std::cout << "Generate path ... \n";
+                // This method returns vector of coordinates from target to source.
+                auto pth = obj.generator.findPath({ posx, posy }, { destx, desty }, (pos.psi / 100));
+
+                path p1;
                 {
-                    p1.x = coordinate.x * TICKS_PER_PIXEL * pixels;
-                    p1.y = coordinate.y * TICKS_PER_PIXEL * pixels;
-                    help.push_back(p1);
-                    pathq.push_front(p1);
+                    lock_guard<mutex> lock(obj.locking);
+                    obj.pathq.clear();
+                    for (auto& coordinate : pth)
+                    {
+                        p1.x = coordinate.x * TICKS_PER_PIXEL * pixels;
+                        p1.y = coordinate.y * TICKS_PER_PIXEL * pixels;
+                        obj.pathq.push_front(p1);
+                    }
+                    obj.pathq.pop_front();
+
+                    //route by sa vytvaralo tu v A* a posielal by sa tam kontajner
                 }
-                pathq.pop_front();
-
-                //route by sa vytvaralo tu v A* a posielal by sa tam kontajner
             }
-        }
 
-        {
-            lock_guard<mutex> lock(locking);
-            bool noPath = false;
-            if (pathq.size() <= 1)
             {
-                // nowhere to go
-                noPath = true;
-            }
-            else
-            {
-                auto endPt = pathq.back();
-                if (endPt.x == 0 && endPt.y == 0)
+                lock_guard<mutex> lock(obj.locking);
+                bool noPath = false;
+                if (obj.pathq.size() <= 1)
+                {
+                    // nowhere to go
                     noPath = true;
-            }
+                }
+                else
+                {
+                    auto endPt = obj.pathq.back();
+                    if (endPt.x == 0 && endPt.y == 0)
+                        noPath = true;
+                }
 
-            if (noPath)
-            {
-                wheels.Left = 0;
-                wheels.Right = 0;
-                robo.setWheels(wheels);
-                int x = rand() % 170 + 1;
-                _dest.x = x * 80;
-                int y = rand() % 77 + 1;
-                _dest.y = y * 80;
-                cout << _dest.x << "      " << _dest.y;
+                if (noPath)
+                {
+                    wheels.Left = 0;
+                    wheels.Right = 0;
+                    obj.setWheels(wheels);
+                    int x = rand() % 170 + 1;
+                    obj.dest.x = x * 80;
+                    int y = rand() % 77 + 1;
+                    obj.dest.y = y * 80;
+                    cout << obj.dest.x << "      " << obj.dest.y;
+                }
             }
+            obj.route();
         }
-        route(robo, pathq);
+
+        this_thread::sleep_for(chrono::milliseconds(10));
     }
 }
