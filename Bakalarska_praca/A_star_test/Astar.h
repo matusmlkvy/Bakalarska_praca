@@ -49,18 +49,20 @@ namespace AStar
     public:
         Generator();
         int detectCollision(Vec2i coordinates_);
+        bool detectRobot(Vec2i coordinates_);
         void setWorldSize(Vec2i worldSize_);
         void setDiagonalMovement(bool enable_);
         void setHeuristic(HeuristicFunction heuristic_);
         CoordinateList findPath(Vec2i source_, Vec2i target_, int dir_);
         void addCollision(Vec2i coordinates_);
-        void addCollisionHelp(Vec2i coordinates_);
         void removeCollision(Vec2i coordinates_);
         void clearCollisions();
+        void addrobot(Vec2i coordinates_);
+        void clearrobot();
 
     private:
         HeuristicFunction heuristic;
-        CoordinateList direction, walls;
+        CoordinateList direction, walls, robots;
         Vec2i worldSize;
         uint directions;
         std::vector<int> directionAngles;

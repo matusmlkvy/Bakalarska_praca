@@ -34,15 +34,18 @@ class MyRobot : public Robot
 	thread th;
 	volatile bool is_enabled;
 	destination dest;
+	
 
 public:
 	MyRobot();
 	~MyRobot();	
 	AStar::Generator generator;
 	deque<path> pathq;
+	vector<path> point_route;
 	
 	void setDestination(const destination& _dst);
 	destination getDestination() const;
+	vector<path> getroute();
 
 	void turning(float angleErr);
 	void going(float _fwd, float _rot = 0);

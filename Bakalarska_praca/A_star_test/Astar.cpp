@@ -71,6 +71,17 @@ void AStar::Generator::removeCollision(Vec2i coordinates_)
     }
 }
 
+void AStar::Generator::addrobot(Vec2i coordinates_)
+{
+    std::lock_guard<std::mutex> locker(lock_walls);
+    robots.push_back(coordinates_);
+}
+
+void AStar::Generator::clearrobot()
+{
+    robots.clear();
+}
+
 //dorobit moving obstacles nieco podobne ako walls len s premenlivymi prekazkami a ked najde cestu premaze
 
 
@@ -124,7 +135,7 @@ AStar::CoordinateList AStar::Generator::findPath(Vec2i source_, Vec2i target_, i
             Vec2i newCoordinates(current->coordinates + direction[i]);
             int newDir = directionAngles[i];
             int danger = detectCollision(newCoordinates);
-            if (findNodeOnList(closedSet, newCoordinates) || danger > 400)
+            if (findNodeOnList(closedSet, newCoordinates) || danger > 400 || detectCollision(newCoordinates))
             {
                 continue;
             }
@@ -159,6 +170,7 @@ AStar::CoordinateList AStar::Generator::findPath(Vec2i source_, Vec2i target_, i
 
     releaseNodes(openSet);
     releaseNodes(closedSet);
+    clearrobot();
 
     return path;
 }
@@ -222,7 +234,24 @@ int AStar::Generator::detectCollision(Vec2i coordinates_)
     }
     return false;*/
 }
-//prebehnut vo fore cely vektor a hlavne pozriet ci sa nenachadza v robotovi prekazka
+
+bool AStar::Generator::detectRobot(Vec2i coordinates_)
+{
+    std::lock_guard<std::mutex> locker(lock_walls);
+    int xc = coordinates_.x;
+    int yc = coordinates_.y;
+    for (int i = 0; i < robots.size(); i++)
+    {
+        int xw = robots[i].x;
+        int yw = robots[i].y;
+        if (abs(xw - xc) < 4 && abs(yw - yc) < 4)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 
 AStar::Vec2i AStar::Heuristic::getDelta(Vec2i source_, Vec2i target_)
 {

@@ -29,6 +29,17 @@ struct obstacle
     double x = 0;
     double y = 0;
 };
+struct point_of_path
+{
+    double x = 0;
+    double y = 0;
+
+};
+struct robot_position
+{
+    double x = 0;
+    double y = 0;
+};
 
 mutex mtx;
 
@@ -123,9 +134,23 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
     int pixels = _pixels;
     int proximity_for_detection = 60;
     Mat imagegen = Mat::zeros(ROW * pixels, COL * pixels, CV_8UC3);
+    //pokus o vlozenie robotov
+    robot_position rob_p;
+    for (size_t i = 0; i < robots.size(); i++)
+    {
+        MyRobot& robo = *robots[i];
+        Position_t pos = robo.position();
+        rob_p.x = pos.x;
+        rob_p.y = pos.y;
+        robo.generator.addrobot({ (int)std::round((double)rob_p.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)rob_p.y / pixels / TICKS_PER_PIXEL) });
+    }
     for (int i = 0; i < robots.size(); i++)
     {
         MyRobot& robo = *robots[i];
+
+        destination dest = robo.getDestination();
+
 
         //robots coordinates
         Position_t pos = robo.position();
@@ -139,7 +164,8 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
         float degree = (float)pos.psi * 0.01 * M_PI / 180.0;
 
         obstacle point;
-
+        point_of_path rp;
+        vector<point_of_path> vrp;
         
         if (prox.L_150deg > proximity_for_detection)
         {
@@ -161,19 +187,13 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
                 robot_in_way = true;
             }
 
-
             if (robot_in_way == false)
             {
                 vpoint.push_back(point);
-                //generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                  //  (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+                
+                robo.generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
             }
-
-
-            /*vpoint.push_back(point);
-            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });*/
-
         }
         if (prox.L_20deg > proximity_for_detection)
         {
@@ -194,19 +214,12 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
                 robot_in_way = true;
             }
 
-
             if (robot_in_way == false)
             {
                 vpoint.push_back(point);
-                //generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                  //  (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+                robo.generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
             }
-
-
-            /*vpoint.push_back(point);
-            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });*/
-
         }
         if (prox.L_50deg > proximity_for_detection)
         {
@@ -227,19 +240,12 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
                 robot_in_way = true;
             }
 
-
             if (robot_in_way == false)
             {
                 vpoint.push_back(point);
-                //generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                  //  (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+                robo.generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
             }
-
-
-            /*vpoint.push_back(point);
-            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });*/
-
         }
         if (prox.L_90deg > proximity_for_detection)
         {
@@ -260,19 +266,12 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
                 robot_in_way = true;
             }
 
-
             if (robot_in_way == false)
             {
                 vpoint.push_back(point);
-                //generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                  //  (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+                robo.generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
             }
-
-
-            /*vpoint.push_back(point);
-            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });*/
-
         }
         if (prox.R_150deg > proximity_for_detection)
         {
@@ -293,19 +292,12 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
                 robot_in_way = true;
             }
 
-
             if (robot_in_way == false)
             {
                 vpoint.push_back(point);
-                //generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                  //  (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+                robo.generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
             }
-
-
-            /*vpoint.push_back(point);
-            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });*/
-
         }
         if (prox.R_20deg > proximity_for_detection)
         {
@@ -326,19 +318,12 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
                 robot_in_way = true;
             }
 
-
             if (robot_in_way == false)
             {
                 vpoint.push_back(point);
-                //generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                  //  (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+                robo.generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
             }
-
-
-            /*vpoint.push_back(point);
-            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });*/
-
         }
         if (prox.R_50deg > proximity_for_detection)
         {
@@ -359,19 +344,12 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
                 robot_in_way = true;
             }
 
-
             if (robot_in_way == false)
             {
                 vpoint.push_back(point);
-                //generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                  //  (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+                robo.generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
             }
-
-
-            /*vpoint.push_back(point);
-            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });*/
-
         }
         if (prox.R_90deg > proximity_for_detection)
         {
@@ -392,19 +370,12 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
                 robot_in_way = true;
             }
 
-
             if (robot_in_way == false)
             {
                 vpoint.push_back(point);
-                //generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                  //  (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+                robo.generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
             }
-
-
-            /*vpoint.push_back(point);
-            generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });*/
-
         }
 
         for (int i = 0; i < vpoint.size(); i++)
@@ -415,6 +386,29 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
         }
 
 
+        //draw coordinates on map (path)
+        auto pth = robo.getroute();
+
+        for (auto& coordinate : pth)
+        {
+            rp.x = coordinate.x;
+            rp.y = coordinate.y;
+            vrp.push_back(rp);
+        }
+        lock_guard<mutex> lock(mtx);
+        {
+            for (int i = 0; i < vrp.size(); i++)
+            {
+                int x = (int)vrp[i].x / TICKS_PER_PIXEL;
+                int y = (int)vrp[i].y / TICKS_PER_PIXEL;
+                rectangle(imagegen, Point(x, y + 2), Point(x + 2, y), Scalar(0, 0, 255), FILLED);
+            }
+        }
+        
+        //draw destination point
+        circle(imagegen, Point(dest.x / TICKS_PER_PIXEL, dest.y / TICKS_PER_PIXEL), 10, Scalar(255, 0, 255), FILLED);
+        
+        
 
         // robot
         circle(imagegen, Point(pos.x / TICKS_PER_PIXEL, pos.y / TICKS_PER_PIXEL), R, Scalar(255, 0, 0), FILLED);
@@ -531,7 +525,7 @@ void run(MyRobotList& robots, volatile bool& en, int _pixels)
         drawmap(trueGrid, pixels, robots);
         estmap(trueGrid, pixels, robots);
     }
-    /*while (true)
+    /*while (en)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
         estmap(trueGrid, pixels, robo);
@@ -544,12 +538,6 @@ int main()
 {
     int pixels;
 
-    //Robot robo;
-    Robot robo2;
-
-    //robo.enableSimulation();
-
-    robo2.enableSimulation();
 
     //robo.open("COM3");
     //robo.enableSensors();
@@ -561,13 +549,11 @@ int main()
     setpos.psi = 4500;
     setpos.x = 560;
     setpos.y = 3200;
-    //robo.setPosition(setpos);
 
     Position_t setpos2;
     setpos2.psi = 0;
-    setpos2.x = 6000;
-    setpos2.y = 8000;
-    robo2.setPosition(setpos2);
+    setpos2.x = 7000;
+    setpos2.y = 5000;
 
     volatile bool en = true;
     MyRobotList vector_of_robots;
@@ -575,22 +561,17 @@ int main()
     r1->enableSimulation();
     r1->setPosition(setpos);
 
+    unique_ptr<MyRobot> r2(new MyRobot());
+    r2->enableSimulation();
+    r2->setPosition(setpos2);
+    r2->setDestination({3000, 2000});
 
-    
 
-    // vector<unique_ptr<MyRobot>> vector_of_robots;
-    // MyRobot* r = new MyRobot(....);
-    // r->setPosition(...);
     vector_of_robots.push_back(move(r1));
+    vector_of_robots.push_back(move(r2));
 
     //spravit triedu MyRobots, ktora bude mat funkcie route, turning a going, a parametre robota
 
-
-
-    
-
-
-    //thread astar(generatepath, ref(robo), ref(dest), 8);
     
     thread drawingmap(run, ref(vector_of_robots), ref(en), 8);
     

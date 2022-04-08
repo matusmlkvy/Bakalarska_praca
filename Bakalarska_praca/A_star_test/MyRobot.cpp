@@ -114,6 +114,12 @@ void MyRobot::setDestination(const destination& _dest)
      dest = _dest;
 }
 
+vector<path> MyRobot::getroute()
+{
+    return point_route;
+}
+
+
 
 void MyRobot::generatepath(MyRobot& obj, int _pixels)
 {
@@ -154,11 +160,13 @@ void MyRobot::generatepath(MyRobot& obj, int _pixels)
                 {
                     lock_guard<mutex> lock(obj.locking);
                     obj.pathq.clear();
+                    obj.point_route.clear();
                     for (auto& coordinate : pth)
                     {
                         p1.x = coordinate.x * TICKS_PER_PIXEL * pixels;
                         p1.y = coordinate.y * TICKS_PER_PIXEL * pixels;
                         obj.pathq.push_front(p1);
+                        obj.point_route.push_back(p1);
                     }
                     obj.pathq.pop_front();
 
