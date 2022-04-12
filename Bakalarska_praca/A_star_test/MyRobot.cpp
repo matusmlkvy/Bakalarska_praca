@@ -3,7 +3,8 @@
 MyRobot::MyRobot() : 
     Robot(),
     is_enabled(true),
-    th(generatepath, ref(*this), 8)
+    astar_th(generatepath, ref(*this), 8),
+    route_th(route, ref(*this))
 {
     destination dest;
 }
@@ -11,7 +12,8 @@ MyRobot::MyRobot() :
 MyRobot::~MyRobot()
 {
     is_enabled = false;
-    th.join();
+    astar_th.join();
+    route_th.join();
 }
 
 
@@ -48,57 +50,72 @@ void MyRobot::going(float _fwd, float _rot)
 
 bool turn = false;
 
-void MyRobot::route()
+void MyRobot::route(MyRobot& obj)
 {
-    Position_t pos = position();
-    Wheels_t wh = wheels();
-
-    //tolerance in tick
-    int distance_tolerance = 40;
-    int angle_tolerance = 10;
-
-    path p2;
+    while (obj.is_enabled)
     {
-        lock_guard<mutex> lock(locking);
-        if (pathq.size() > 0)
-            p2 = pathq.front();
-        else
-            return;
-    }
+        Position_t pos = obj.position();
+        Wheels_t wh = obj.wheels();
 
-    double go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
+        //tolerance in tick
+        int distance_tolerance = 40;
+        int angle_tolerance = 10;
 
-    double psi_ref = atan2((p2.y - pos.y), (p2.x - pos.x)) * 180 / M_PI;
-    double wheels_diff = pos.psi * 0.01 - psi_ref;
-    wheels_diff -= round(wheels_diff / 360) * 360;
+        path p2;
+        bool has_target = false;
 
-    if (abs(wheels_diff) > angle_tolerance)
-    {
-        turning(wheels_diff);
-        turn = true;
-    }
-    else if (abs(wheels_diff) > 1 && abs(wheels_diff) <= angle_tolerance && turn == true)
-    {
-        turning(wheels_diff);
-        if (abs(wheels_diff) < 2)
+        // try to get next target
         {
-            turn = false;
+            lock_guard<mutex> lock(obj.locking);
+            if (obj.pathq.size() > 0)
+            {
+                p2 = obj.pathq.front();
+                has_target = true;
+            }
         }
-    }
-    else if ((go >= distance_tolerance))
-    {
-        going(go, wheels_diff);
-    }
-    else
-    {
-        lock_guard<mutex> lock(locking);
-        if (pathq.size() > 1)
+
+        if (has_target)
         {
-            pathq.pop_front();
-            p2 = pathq.front();
+            double go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
+
+            double psi_ref = atan2((p2.y - pos.y), (p2.x - pos.x)) * 180 / M_PI;
+            double wheels_diff = pos.psi * 0.01 - psi_ref;
+            wheels_diff -= round(wheels_diff / 360) * 360;
+
+            if (abs(wheels_diff) > angle_tolerance)
+            {
+                turn = true;
+            }
+            else if (abs(wheels_diff) < 1)
+            {
+                turn = false;
+            }
+
+            if (turn)
+            {
+                obj.turning(wheels_diff);
+            }
+            else if ((go >= distance_tolerance))
+            {
+                obj.going(go, wheels_diff);
+            }
+            else
+            {
+                lock_guard<mutex> lock(obj.locking);
+                if (obj.pathq.size() > 1)
+                {
+                    obj.pathq.pop_front();
+                    p2 = obj.pathq.front();
+                }
+            }
         }
         else
-            return;
+        {
+            // nowhere to go
+            obj.setWheels(0, 0);
+        }
+
+        this_thread::sleep_for(chrono::milliseconds(10));
     }
 }
 
@@ -201,7 +218,6 @@ void MyRobot::generatepath(MyRobot& obj, int _pixels)
                     cout << obj.dest.x << "      " << obj.dest.y;
                 }
             }
-            obj.route();
         }
 
         this_thread::sleep_for(chrono::milliseconds(10));

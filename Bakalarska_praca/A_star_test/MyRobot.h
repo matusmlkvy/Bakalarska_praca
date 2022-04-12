@@ -31,7 +31,8 @@ struct path
 class MyRobot : public Robot
 {
 	mutable mutex locking;
-	thread th;
+	thread astar_th;
+	thread route_th;
 	volatile bool is_enabled;
 	destination dest;
 	
@@ -49,7 +50,7 @@ public:
 
 	void turning(float angleErr);
 	void going(float _fwd, float _rot = 0);
-	void route();
+	static void route(MyRobot& obj);
 	static void generatepath(MyRobot& obj, int _pixels);
 	
 };

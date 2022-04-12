@@ -35,11 +35,7 @@ struct point_of_path
     double y = 0;
 
 };
-struct robot_position
-{
-    double x = 0;
-    double y = 0;
-};
+
 
 mutex mtx;
 
@@ -134,26 +130,32 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
     int pixels = _pixels;
     int proximity_for_detection = 60;
     Mat imagegen = Mat::zeros(ROW * pixels, COL * pixels, CV_8UC3);
-    //pokus o vlozenie robotov
-    robot_position rob_p;
-    for (size_t i = 0; i < robots.size(); i++)
+
+    
+    for (size_t j = 0; j < robots.size(); j++)
     {
-        MyRobot& robo = *robots[i];
-        Position_t pos = robo.position();
-        rob_p.x = pos.x;
-        rob_p.y = pos.y;
-        robo.generator.addrobot({ (int)std::round((double)rob_p.x / pixels / TICKS_PER_PIXEL),
-                    (int)std::round((double)rob_p.y / pixels / TICKS_PER_PIXEL) });
+        //lock_guard<mutex> lock(robots[j]->locking);
+        robots[j]->generator.clearrobot();
     }
+
     for (int i = 0; i < robots.size(); i++)
     {
         MyRobot& robo = *robots[i];
 
         destination dest = robo.getDestination();
-
-
-        //robots coordinates
         Position_t pos = robo.position();
+        AStar::Vec2i ptRob = { (int)std::round((double)pos.x / pixels / TICKS_PER_PIXEL),
+                        (int)std::round((double)pos.y / pixels / TICKS_PER_PIXEL) };
+
+        //pokus o vlozenie robotov
+        for (size_t j = 0; j < robots.size(); j++)
+        {
+            if (i == j) // nevloz sam seba
+                continue;
+            
+            robots[j]->generator.addrobot(ptRob);
+        }
+
         //robots radius
         int R = (int)(0.035 * TICKS_PER_METER / TICKS_PER_PIXEL);
 
@@ -190,9 +192,13 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
             if (robot_in_way == false)
             {
                 vpoint.push_back(point);
-                
-                robo.generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+                AStar::Vec2i pt = {
+                    (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) 
+                };
+
+                for(int j = 0; j < robots.size(); j++)
+                    robots[j]->generator.addCollision(pt);
             }
         }
         if (prox.L_20deg > proximity_for_detection)
@@ -217,8 +223,13 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
             if (robot_in_way == false)
             {
                 vpoint.push_back(point);
-                robo.generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+                AStar::Vec2i pt = {
+                    (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL)
+                };
+
+                for (int j = 0; j < robots.size(); j++)
+                    robots[j]->generator.addCollision(pt);
             }
         }
         if (prox.L_50deg > proximity_for_detection)
@@ -243,8 +254,13 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
             if (robot_in_way == false)
             {
                 vpoint.push_back(point);
-                robo.generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+                AStar::Vec2i pt = {
+                    (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL)
+                };
+
+                for (int j = 0; j < robots.size(); j++)
+                    robots[j]->generator.addCollision(pt);
             }
         }
         if (prox.L_90deg > proximity_for_detection)
@@ -269,8 +285,13 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
             if (robot_in_way == false)
             {
                 vpoint.push_back(point);
-                robo.generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+                AStar::Vec2i pt = {
+                    (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL)
+                };
+
+                for (int j = 0; j < robots.size(); j++)
+                    robots[j]->generator.addCollision(pt);
             }
         }
         if (prox.R_150deg > proximity_for_detection)
@@ -295,8 +316,13 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
             if (robot_in_way == false)
             {
                 vpoint.push_back(point);
-                robo.generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+                AStar::Vec2i pt = {
+                    (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL)
+                };
+
+                for (int j = 0; j < robots.size(); j++)
+                    robots[j]->generator.addCollision(pt);
             }
         }
         if (prox.R_20deg > proximity_for_detection)
@@ -321,8 +347,13 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
             if (robot_in_way == false)
             {
                 vpoint.push_back(point);
-                robo.generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+                AStar::Vec2i pt = {
+                    (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL)
+                };
+
+                for (int j = 0; j < robots.size(); j++)
+                    robots[j]->generator.addCollision(pt);
             }
         }
         if (prox.R_50deg > proximity_for_detection)
@@ -347,8 +378,13 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
             if (robot_in_way == false)
             {
                 vpoint.push_back(point);
-                robo.generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+                AStar::Vec2i pt = {
+                    (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL)
+                };
+
+                for (int j = 0; j < robots.size(); j++)
+                    robots[j]->generator.addCollision(pt);
             }
         }
         if (prox.R_90deg > proximity_for_detection)
@@ -373,8 +409,13 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
             if (robot_in_way == false)
             {
                 vpoint.push_back(point);
-                robo.generator.addCollision({ (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
-                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL) });
+                AStar::Vec2i pt = {
+                    (int)std::round((double)point.x / pixels / TICKS_PER_PIXEL),
+                    (int)std::round((double)point.y / pixels / TICKS_PER_PIXEL)
+                };
+
+                for (int j = 0; j < robots.size(); j++)
+                    robots[j]->generator.addCollision(pt);
             }
         }
 

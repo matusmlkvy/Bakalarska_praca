@@ -79,6 +79,7 @@ void AStar::Generator::addrobot(Vec2i coordinates_)
 
 void AStar::Generator::clearrobot()
 {
+    std::lock_guard<std::mutex> locker(lock_walls);
     robots.clear();
 }
 
@@ -124,9 +125,10 @@ AStar::CoordinateList AStar::Generator::findPath(Vec2i source_, Vec2i target_, i
         closedSet.push_back(current);
         openSet.erase(current_it);
 
-        if (closedSet.size() > 10000)
+        if (closedSet.size() > 20000)
         {
             current = new Node(source_, nullptr, dir_);
+            closedSet.push_back(current);
             break;
         }
 
@@ -135,7 +137,7 @@ AStar::CoordinateList AStar::Generator::findPath(Vec2i source_, Vec2i target_, i
             Vec2i newCoordinates(current->coordinates + direction[i]);
             int newDir = directionAngles[i];
             int danger = detectCollision(newCoordinates);
-            if (findNodeOnList(closedSet, newCoordinates) || danger > 400 || detectCollision(newCoordinates))
+            if (findNodeOnList(closedSet, newCoordinates) || danger > 400 || detectRobot(newCoordinates))
             {
                 continue;
             }
@@ -170,7 +172,6 @@ AStar::CoordinateList AStar::Generator::findPath(Vec2i source_, Vec2i target_, i
 
     releaseNodes(openSet);
     releaseNodes(closedSet);
-    clearrobot();
 
     return path;
 }
@@ -240,13 +241,16 @@ bool AStar::Generator::detectRobot(Vec2i coordinates_)
     std::lock_guard<std::mutex> locker(lock_walls);
     int xc = coordinates_.x;
     int yc = coordinates_.y;
-    for (int i = 0; i < robots.size(); i++)
+    if (robots.size() > 0)
     {
-        int xw = robots[i].x;
-        int yw = robots[i].y;
-        if (abs(xw - xc) < 4 && abs(yw - yc) < 4)
+        for (int i = 0; i < robots.size(); i++)
         {
-            return true;
+            int xw = robots[i].x;
+            int yw = robots[i].y;
+            if (abs(xw - xc) < 9 && abs(yw - yc) < 9)
+            {
+                return true;
+            }
         }
     }
     return false;
