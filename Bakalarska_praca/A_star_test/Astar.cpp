@@ -137,14 +137,15 @@ AStar::CoordinateList AStar::Generator::findPath(Vec2i source_, Vec2i target_, i
             Vec2i newCoordinates(current->coordinates + direction[i]);
             int newDir = directionAngles[i];
             int danger = detectCollision(newCoordinates);
-            if (findNodeOnList(closedSet, newCoordinates) || danger > 400 || detectRobot(newCoordinates))
+            int danger_robot = detectRobot(newCoordinates);
+            if (findNodeOnList(closedSet, newCoordinates) || danger > 400 || danger_robot > 400)
             {
                 continue;
             }
             
             int dirDiff = newDir - current->dir;
             dirDiff -= (int)(round((double)dirDiff / 360.0) * 360.0);
-            uint totalCost = current->G + ((i < 4) ? 10 : 14) + abs(dirDiff) + danger;
+            uint totalCost = current->G + ((i < 4) ? 10 : 14) + abs(dirDiff) + danger + danger_robot;
 
             Node* successor = findNodeOnList(openSet, newCoordinates);
             if (successor == nullptr)
@@ -227,33 +228,53 @@ int AStar::Generator::detectCollision(Vec2i coordinates_)
     {
         return 0;
     }
-    /*if (coordinates_.x < 0 || coordinates_.x >= worldSize.x ||
-        coordinates_.y < 0 || coordinates_.y >= worldSize.y ||
-        std::find(walls.begin(), walls.end(), coordinates_) != walls.end())
-    {
-        return true;
-    }
-    return false;*/
 }
 
-bool AStar::Generator::detectRobot(Vec2i coordinates_)
+int AStar::Generator::detectRobot(Vec2i coordinates_)
 {
     std::lock_guard<std::mutex> locker(lock_walls);
+
+    int dmin = 10000;
     int xc = coordinates_.x;
     int yc = coordinates_.y;
-    if (robots.size() > 0)
+    for (int i = 0; i < robots.size(); i++)
     {
-        for (int i = 0; i < robots.size(); i++)
+        int xw = robots[i].x;
+        int yw = robots[i].y;
+        int dx = xw - xc;
+        int dy = yw - yc;
+        int d = dx * dx + dy * dy;
+        if (d < dmin)
         {
-            int xw = robots[i].x;
-            int yw = robots[i].y;
-            if (abs(xw - xc) < 9 && abs(yw - yc) < 9)
-            {
-                return true;
-            }
+            dmin = d;
         }
     }
-    return false;
+    if (dmin == 0)
+    {
+        return 10000;
+    }
+    else if (dmin < 40)
+    {
+        return 1000 / dmin;
+    }
+    else
+    {
+        return 0;
+    }
+    /*
+    int xc = coordinates_.x;
+    int yc = coordinates_.y;
+    
+    for (int i = 0; i < robots.size(); i++)
+    {
+        int xw = robots[i].x;
+        int yw = robots[i].y;
+        if (abs(xw - xc) < 9 && abs(yw - yc) < 9)
+        {
+            return true;
+        }
+    }
+    return false;*/
 }
 
 
