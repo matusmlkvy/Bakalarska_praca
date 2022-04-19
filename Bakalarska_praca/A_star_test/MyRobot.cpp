@@ -54,65 +54,70 @@ void MyRobot::route(MyRobot& obj)
 {
     while (obj.is_enabled)
     {
-        Position_t pos = obj.position();
-        Wheels_t wh = obj.wheels();
-
-        //tolerance in tick
-        int distance_tolerance = 40;
-        int angle_tolerance = 10;
-
-        path p2;
-        bool has_target = false;
-
-        // try to get next target
+        if (obj.simulationEnabled() || obj.isOpen())
         {
-            lock_guard<mutex> lock(obj.locking);
-            if (obj.pathq.size() > 0)
-            {
-                p2 = obj.pathq.front();
-                has_target = true;
-            }
-        }
 
-        if (has_target)
-        {
-            double go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
 
-            double psi_ref = atan2((p2.y - pos.y), (p2.x - pos.x)) * 180 / M_PI;
-            double wheels_diff = pos.psi * 0.01 - psi_ref;
-            wheels_diff -= round(wheels_diff / 360) * 360;
+            Position_t pos = obj.position();
+            Wheels_t wh = obj.wheels();
 
-            if (abs(wheels_diff) > angle_tolerance)
+            //tolerance in tick
+            int distance_tolerance = 40;
+            int angle_tolerance = 20;
+
+            path p2;
+            bool has_target = false;
+
+            // try to get next target
             {
-                turn = true;
-            }
-            else if (abs(wheels_diff) < 1)
-            {
-                turn = false;
+                lock_guard<mutex> lock(obj.locking);
+                if (obj.pathq.size() > 0)
+                {
+                    p2 = obj.pathq.front();
+                    has_target = true;
+                }
             }
 
-            if (turn)
+            if (has_target)
             {
-                obj.turning(wheels_diff);
-            }
-            else if ((go >= distance_tolerance))
-            {
-                obj.going(go, wheels_diff);
+                double go = sqrt(pow((p2.x - pos.x), 2) + pow((p2.y - pos.y), 2));
+
+                double psi_ref = atan2((p2.y - pos.y), (p2.x - pos.x)) * 180 / M_PI;
+                double wheels_diff = pos.psi * 0.01 - psi_ref;
+                wheels_diff -= round(wheels_diff / 360) * 360;
+
+                if (abs(wheels_diff) > angle_tolerance)
+                {
+                    turn = true;
+                }
+                else if (abs(wheels_diff) < 5)
+                {
+                    turn = false;
+                }
+
+                if (turn)
+                {
+                    obj.turning(wheels_diff);
+                }
+                else if ((go >= distance_tolerance))
+                {
+                    obj.going(go, wheels_diff);
+                }
+                else
+                {
+                    lock_guard<mutex> lock(obj.locking);
+                    if (obj.pathq.size() > 1)
+                    {
+                        obj.pathq.pop_front();
+                        p2 = obj.pathq.front();
+                    }
+                }
             }
             else
             {
-                lock_guard<mutex> lock(obj.locking);
-                if (obj.pathq.size() > 1)
-                {
-                    obj.pathq.pop_front();
-                    p2 = obj.pathq.front();
-                }
+                // nowhere to go
+                obj.setWheels(0, 0);
             }
-        }
-        else
-        {
-            // nowhere to go
-            obj.setWheels(0, 0);
         }
 
         this_thread::sleep_for(chrono::milliseconds(10));

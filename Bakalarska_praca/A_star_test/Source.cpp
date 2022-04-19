@@ -128,7 +128,7 @@ template <size_t ROW, size_t COL>
 void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& robots)
 {
     int pixels = _pixels;
-    int proximity_for_detection = 60;
+    int proximity_for_detection = 0;
     Mat imagegen = Mat::zeros(ROW * pixels, COL * pixels, CV_8UC3);
 
     
@@ -560,17 +560,18 @@ void run(MyRobotList& robots, volatile bool& en, int _pixels)
 
     int pixels = _pixels;
 
-
-    while (en)
+    //simulation
+    /*while (en)
     {  
         drawmap(trueGrid, pixels, robots);
         estmap(trueGrid, pixels, robots);
-    }
-    /*while (en)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        estmap(trueGrid, pixels, robo);
     }*/
+    //real robots
+    while (en)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        estmap(trueGrid, pixels, robots);
+    }
     
 }
 
@@ -579,9 +580,6 @@ int main()
 {
     int pixels;
 
-
-    //robo.open("COM3");
-    //robo.enableSensors();
 
 
     Wheels_t set;
@@ -596,10 +594,15 @@ int main()
     setpos2.x = 7000;
     setpos2.y = 5000;
 
+    Position_t setpos3;
+    setpos3.psi = 13500;
+    setpos3.x = 10000;
+    setpos3.y = 2000;
+
     volatile bool en = true;
     MyRobotList vector_of_robots;
     unique_ptr<MyRobot> r1(new MyRobot());
-    r1->enableSimulation();
+    /*r1->enableSimulation();
     r1->setPosition(setpos);
 
     unique_ptr<MyRobot> r2(new MyRobot());
@@ -607,12 +610,21 @@ int main()
     r2->setPosition(setpos2);
     r2->setDestination({3000, 2000});
 
+    unique_ptr<MyRobot> r3(new MyRobot());
+    r3->enableSimulation();
+    r3->setPosition(setpos3);
+    r3->setDestination({ 5000, 4000 });*/
+    
+    //real robots
+    r1->open("COM3");
+    r1->enableSensors();
+    r1->setPosition(setpos);
 
     vector_of_robots.push_back(move(r1));
-    vector_of_robots.push_back(move(r2));
+    //vector_of_robots.push_back(move(r2));
+    //vector_of_robots.push_back(move(r3));
 
-    //spravit triedu MyRobots, ktora bude mat funkcie route, turning a going, a parametre robota
-
+    
     
     thread drawingmap(run, ref(vector_of_robots), ref(en), 8);
     
