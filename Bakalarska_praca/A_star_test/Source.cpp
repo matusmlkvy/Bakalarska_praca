@@ -128,7 +128,7 @@ template <size_t ROW, size_t COL>
 void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& robots)
 {
     int pixels = _pixels;
-    int proximity_for_detection = 0;
+    int proximity_for_detection = 70;
     Mat imagegen = Mat::zeros(ROW * pixels, COL * pixels, CV_8UC3);
 
     
@@ -147,7 +147,7 @@ void estmap(const array<array<int, COL>, ROW>& grid, int _pixels, MyRobotList& r
         AStar::Vec2i ptRob = { (int)std::round((double)pos.x / pixels / TICKS_PER_PIXEL),
                         (int)std::round((double)pos.y / pixels / TICKS_PER_PIXEL) };
 
-        //pokus o vlozenie robotov
+        //vlozenie robotov
         for (size_t j = 0; j < robots.size(); j++)
         {
             if (i == j) // nevloz sam seba
@@ -561,17 +561,17 @@ void run(MyRobotList& robots, volatile bool& en, int _pixels)
     int pixels = _pixels;
 
     //simulation
-    /*while (en)
+    while (en)
     {  
         drawmap(trueGrid, pixels, robots);
         estmap(trueGrid, pixels, robots);
-    }*/
+    }
     //real robots
-    while (en)
+    /*while (en)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
         estmap(trueGrid, pixels, robots);
-    }
+    }*/
     
 }
 
@@ -599,10 +599,35 @@ int main()
     setpos3.x = 10000;
     setpos3.y = 2000;
 
+    Position_t setpos4;
+    setpos4.psi = 11000;
+    setpos4.x = 2000;
+    setpos4.y = 5000;
+
+    Position_t setpos5;
+    setpos5.psi = -11000;
+    setpos5.x = 3500;
+    setpos5.y = 3500;
+
+    Position_t setpos6;
+    setpos6.psi = 0;
+    setpos6.x = 6500;
+    setpos6.y = 500;
+
+    Position_t setpos7;
+    setpos7.psi = -7500;
+    setpos7.x = 1700;
+    setpos7.y = 1500;
+
+    Position_t setpos8;
+    setpos8.psi = 4500;
+    setpos8.x = 8000;
+    setpos8.y = 600;
+
     volatile bool en = true;
     MyRobotList vector_of_robots;
     unique_ptr<MyRobot> r1(new MyRobot());
-    /*r1->enableSimulation();
+    r1->enableSimulation();
     r1->setPosition(setpos);
 
     unique_ptr<MyRobot> r2(new MyRobot());
@@ -613,16 +638,51 @@ int main()
     unique_ptr<MyRobot> r3(new MyRobot());
     r3->enableSimulation();
     r3->setPosition(setpos3);
-    r3->setDestination({ 5000, 4000 });*/
+    r3->setDestination({ 5000, 4000 });
+
+    unique_ptr<MyRobot> r4(new MyRobot());
+    r4->enableSimulation();
+    r4->setPosition(setpos4);
+    r4->setDestination({ 7000, 1500 });
+
+    unique_ptr<MyRobot> r5(new MyRobot());
+    r5->enableSimulation();
+    r5->setPosition(setpos5);
+    r5->setDestination({ 700, 1500 });
+
+    unique_ptr<MyRobot> r6(new MyRobot());
+    r6->enableSimulation();
+    r6->setPosition(setpos6);
+    r6->setDestination({ 6500, 1500 });
+
+    unique_ptr<MyRobot> r7(new MyRobot());
+    r7->enableSimulation();
+    r7->setPosition(setpos7);
+    r7->setDestination({ 500, 5500 });
+
+    unique_ptr<MyRobot> r8(new MyRobot());
+    r8->enableSimulation();
+    r8->setPosition(setpos8);
+    r8->setDestination({ 700, 2500 });
     
     //real robots
-    r1->open("COM3");
+    /*r1->open("COM3");
     r1->enableSensors();
     r1->setPosition(setpos);
 
+    r2->open("COM6");
+    r2->enableSensors();
+    r2->setPosition(setpos2);
+    r2->setDestination({ 3000, 2000 });*/
+
     vector_of_robots.push_back(move(r1));
-    //vector_of_robots.push_back(move(r2));
-    //vector_of_robots.push_back(move(r3));
+    vector_of_robots.push_back(move(r2));
+    vector_of_robots.push_back(move(r3));
+    vector_of_robots.push_back(move(r4));
+    vector_of_robots.push_back(move(r5));
+    vector_of_robots.push_back(move(r6));
+    vector_of_robots.push_back(move(r7));
+    vector_of_robots.push_back(move(r8));
 
     
     

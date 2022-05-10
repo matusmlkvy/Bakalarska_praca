@@ -24,7 +24,9 @@ void MyRobot::turning(float angleErr)
     angleErr -= 360.0 * round(angleErr / 360.0);
 
     if (angleErr > 30.0) angleErr = 30.0;
+    else if (angleErr < 10 && angleErr > 0) angleErr = 10.0;
     else if (angleErr < -30.0) angleErr = -30.0;
+    else if (angleErr > -10 && angleErr < 0) angleErr = -10.0;
 
     wh.Left = -2 * angleErr;
     wh.Right = 2 * angleErr;
